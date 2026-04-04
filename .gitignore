@@ -1,0 +1,19 @@
+# Ignore all books by default
+books/**/*.pdf
+books/**/*.epub
+
+# Except test files for server testing
+!books/pdf/A_Test_Rose.pdf
+!books/epub/A_Test_Rose.epub
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+venv/
+.venv/
+
+# macOS
+.DS_Store
