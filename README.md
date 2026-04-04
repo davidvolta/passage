@@ -139,22 +139,4 @@ You're writing a book, not building a product. Streamlit gives you a working bro
 
 ---
 
-## How to Work on This in Claude Code
-
-This project is designed to be built incrementally inside Claude Code. Suggested session pattern:
-
-1. Start each session by referencing this README
-2. Work one Phase at a time — don't move to the next until the current one produces clean output on a small sample (3–5 books)
-3. Always test on a small batch before running the full parallel pipeline
-4. Keep `config.py` as the single source of truth — never hardcode paths in scripts
-
----
-
-## First Thing to Do
-
-Open this project folder in Claude Code and say:  
-**"Let's start Phase 0 — set up the environment and write config.py"**
-
----
-
 *Last updated: April 2026*
