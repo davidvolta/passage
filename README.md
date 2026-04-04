@@ -24,22 +24,24 @@ A local web UI where you type a topic or question, and get back real passages fr
 four_polarities/
 │
 ├── books/                      # Raw source files (PDFs + EPUBs) — untouched
+│   ├── pdf/               		# PDFs of Research 
+│   └── epub/                 	# EPUBS of Researc
 │
 ├── processed/
 │   ├── markdown/               # One .md file per book after conversion
 │   └── chunks/                 # Chunked JSON files ready for embedding
 │
-├── db/                         # ChromaDB vector store (auto-generated, don't edit)
+├── db/                         # Vector store (auto-generated, don't edit)
 │
 ├── pipeline/                   # All processing scripts
 │   ├── convert.py              # PDF/EPUB → Markdown
 │   ├── chunk.py                # Markdown → structured JSON chunks
-│   ├── embed.py                # Chunks → ChromaDB vectors
+│   ├── embed.py                # Chunks → Vectors
 │   └── run_all.py              # Coordinator: runs all three in parallel
 │
 ├── app/                        # The UI
 │   ├── main.py                 # Streamlit app entry point
-│   └── search.py               # Query logic against ChromaDB
+│   └── search.py               # Query logic against db
 │
 ├── config.py                   # Paths, model names, chunk sizes — all config in one place
 ├── requirements.txt
