@@ -135,8 +135,6 @@ You're writing a book, not building a product. Streamlit gives you a working bro
 - [ ] **Result count**: How many passages per search? Start with 10, adjust.
 - [ ] **Filtering**: Do you want to filter by book, or always search across all books?
 - [ ] **Saving passages**: Do you want to mark/save passages inside the tool, or just read and copy manually?
-- [ ] **UI design**: Functional first, then style if needed.
-
 ---
 
 *Last updated: April 2026*
