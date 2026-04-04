@@ -1,27 +1,25 @@
-# Four Polarities — Osho Knowledge Base
+# Passage
 ### Project Plan & Architecture
 
 ---
 
 ## What This Is
 
-A local tool for searching and retrieving passages from 100+ Osho books.  
+A local tool for searching and retrieving passages from 100s of books.  
 Built for two people writing a book. The tool ingests a large library, processes it into a searchable format, and surfaces relevant passages through a simple UI.
-
-No cloud. No external services. Runs entirely on your Mac.
 
 ---
 
 ## The End State
 
-A local web UI where you type a topic or question, and get back real passages from Osho's books — with the source book and chapter clearly labeled. You browse, read, and take what's useful for your writing.
+Get back real passages from research books — with the source book and chapter clearly labeled. You browse, read, and take what's useful for your writing.
 
 ---
 
 ## Project Structure
 
 ```
-four_polarities/
+passage/
 │
 ├── books/                      # Raw source files (PDFs + EPUBs) — untouched
 │   ├── pdf/               		# PDFs of Research 
