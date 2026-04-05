@@ -37,6 +37,7 @@ passage/
 │       └── index.html          # UI
 ├── config.py
 ├── ingest.py                   # run this to index your books
+├── test_ingest.py
 ├── requirements.txt
 └── README.md
 ```
@@ -61,7 +62,7 @@ passage/
 
 ```bash
 pip install -r requirements.txt
-export OPENAI_API_KEY=your_key_here
+echo "OPENAI_API_KEY=your_key_here" > .env
 ```
 
 Add your books to `books/pdf/` and `books/epub/`.

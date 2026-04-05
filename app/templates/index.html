@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passage</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 1.8rem; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 0.95rem; margin-bottom: 32px; }
+  .search-box { display: flex; gap: 8px; margin-bottom: 12px; }
+  .search-box input { flex: 1; padding: 10px 14px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+  .search-box input:focus { outline: none; border-color: #666; }
+  .search-box button { padding: 10px 20px; font-size: 1rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .search-box button:hover { background: #444; }
+  .tabs { display: flex; gap: 16px; margin-bottom: 24px; }
+  .tabs button { background: none; border: none; font-size: 0.95rem; color: #888; cursor: pointer; padding: 4px 0; border-bottom: 2px solid transparent; font-family: inherit; }
+  .tabs button.active { color: #2a2a2a; border-bottom-color: #2a2a2a; }
+  .status { color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .passage-text { font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; margin-bottom: 12px; }
+  .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
+  .passage-meta .book { font-style: italic; }
+  .passage-meta button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem; color: #666; font-family: inherit; }
+  .passage-meta button:hover { border-color: #888; color: #2a2a2a; }
+  .passage-meta button.saved { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
+  .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
+  .spinner { display: none; color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>Passage</h1>
+<p class="subtitle">Search across your book library</p>
+
+<div class="search-box">
+  <input type="text" id="query" placeholder="Type a topic or question..." autofocus>
+  <button onclick="doSearch()">Search</button>
+</div>
+
+<div class="tabs">
+  <button class="active" onclick="showTab('results')">Results</button>
+  <button onclick="showTab('saved')">Saved</button>
+</div>
+
+<div class="spinner" id="spinner">Searching...</div>
+<div class="status" id="status"></div>
+
+<div id="results"></div>
+<div id="saved" style="display:none"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let savedIds = new Set();
+
+// Load saved passages on startup
+fetch('/api/saved').then(r => r.json()).then(data => {
+  data.forEach(p => savedIds.add(p.chunk_id));
+});
+
+$('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+async function doSearch() {
+  const q = $('query').value.trim();
+  if (!q) return;
+  showTab('results');
+  $('spinner').style.display = 'block';
+  $('status').textContent = '';
+  $('results').innerHTML = '';
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const passages = await res.json();
+    $('spinner').style.display = 'none';
+    $('status').textContent = `${passages.length} passages found`;
+    $('results').innerHTML = passages.map(p => passageCard(p, false)).join('');
+  } catch (err) {
+    $('spinner').style.display = 'none';
+    $('status').textContent = 'Search failed — check the console';
+    console.error(err);
+  }
+}
+
+function passageCard(p, isSavedView) {
+  const isSaved = savedIds.has(p.chunk_id);
+  const btnLabel = isSavedView ? 'Remove' : (isSaved ? 'Saved' : 'Save');
+  const btnClass = isSaved && !isSavedView ? 'saved' : '';
+  const action = isSavedView
+    ? `unsave('${p.chunk_id}')`
+    : `toggleSave('${p.chunk_id}', '${esc(p.book_title)}', this)`;
+  return `<div class="passage" data-id="${p.chunk_id}">
+    <div class="passage-text">${escHtml(p.text)}</div>
+    <div class="passage-meta">
+      <span class="book">${escHtml(p.book_title)}</span>
+      <button class="${btnClass}" onclick="${action}">${btnLabel}</button>
+    </div>
+  </div>`;
+}
+
+async function toggleSave(chunkId, bookTitle, btn) {
+  if (savedIds.has(chunkId)) return;
+  const card = btn.closest('.passage');
+  const text = card.querySelector('.passage-text').textContent;
+  await fetch('/api/saved', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ chunk_id: chunkId, book_title: bookTitle, text })
+  });
+  savedIds.add(chunkId);
+  btn.textContent = 'Saved';
+  btn.classList.add('saved');
+}
+
+async function unsave(chunkId) {
+  await fetch(`/api/saved/${encodeURIComponent(chunkId)}`, { method: 'DELETE' });
+  savedIds.delete(chunkId);
+  document.querySelector(`.passage[data-id="${chunkId}"]`)?.remove();
+  if (!$('saved').children.length) {
+    $('saved').innerHTML = '<div class="empty">No saved passages yet</div>';
+  }
+}
+
+async function showTab(tab) {
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tabs button:nth-child(${tab === 'results' ? 1 : 2})`).classList.add('active');
+  if (tab === 'results') {
+    $('results').style.display = '';
+    $('saved').style.display = 'none';
+    $('status').style.display = '';
+    $('spinner').style.display === 'block' ? null : $('spinner').style.display = 'none';
+  } else {
+    $('results').style.display = 'none';
+    $('saved').style.display = '';
+    $('status').style.display = 'none';
+    $('spinner').style.display = 'none';
+    const res = await fetch('/api/saved');
+    const data = await res.json();
+    if (!data.length) {
+      $('saved').innerHTML = '<div class="empty">No saved passages yet</div>';
+    } else {
+      $('saved').innerHTML = data.map(p => passageCard(p, true)).join('');
+    }
+  }
+}
+
+function esc(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>
