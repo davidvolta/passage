@@ -8,3 +8,4 @@ uvicorn
 jinja2
 PyYAML
 python-slugify
+python-dotenv

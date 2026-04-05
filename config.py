@@ -1,5 +1,9 @@
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()  # Load OPENAI_API_KEY from .env file
+
 # ── Project Root ─────────────────────────────────────────────────────────────
 ROOT = Path(__file__).parent.resolve()
 
