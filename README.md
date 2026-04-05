@@ -38,6 +38,7 @@ passage/
 ├── config.py
 ├── ingest.py                   # run this to index your books
 ├── test_ingest.py
+├── test_app.py
 ├── requirements.txt
 └── README.md
 ```
@@ -83,11 +84,19 @@ First run on a large library takes a while and costs roughly $1 in OpenAI API us
 
 ## Running the App
 
+Stop the ingest script first — Qdrant local mode locks the DB, so they can't run simultaneously.
+
 ```bash
 uvicorn app.main:app --reload
 ```
 
 Open `http://localhost:8000`.
+
+## Running Tests
+
+```bash
+pytest test_ingest.py test_app.py -v
+```
 
 ---
 
