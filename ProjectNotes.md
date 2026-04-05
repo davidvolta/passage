@@ -1,5 +1,17 @@
 # Project Notes
 
+## Ingest Errors (2026-04-05)
+
+The following files failed during ingest script execution:
+
+- **A_Test_Rose.epub**: error return without exception set
+- **Come Follow To You vol3.pdf**: bad parameter or other API misuse
+- **Come Follow To You vol2.pdf**: bad parameter or other API misuse
+- **DhammapadVol1.pdf**: bad parameter or other API misuse
+- **Early Talks.pdf**: bad parameter or other API misuse
+
+Likely causes: PDF extraction issues (possibly encrypted/permission-restricted PDFs) and EPUB parsing errors.
+
 ## Gitignore & Book Files
 
 The `.gitignore` is set up to ignore all PDFs/EPUBs in `books/` except for `A_Test_Rose.*` test files. This keeps the 200+ Osho books local-only while allowing server-side testing to work.
