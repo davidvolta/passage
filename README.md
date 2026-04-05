@@ -1,140 +1,122 @@
 # Passage
-### Project Plan & Architecture
+### Search and retrieve passages from a large book library
 
 ---
 
 ## What This Is
 
-A local tool for searching and retrieving passages from 100s of books.  
-Built for two people writing a book. The tool ingests a large library, processes it into a searchable format, and surfaces relevant passages through a simple UI.
+A web app for searching passages across hundreds of books.
+Type a topic or question — get back real passages with the source book labeled.
+Built for two people writing a book together.
 
 ---
 
-## The End State
+## What It Does
 
-Get back real passages from research books — with the source book and chapter clearly labeled. You browse, read, and take what's useful for your writing.
+- Ingests PDFs and EPUBs into a searchable vector database
+- Returns semantically relevant passages (~200 words each) ranked by relevance
+- Save passages to a personal list, accessible across sessions
+- Runs locally, deployable to the web when you need shared access
 
 ---
 
-## Project Structure
+## File Structure
 
 ```
 passage/
-│
-├── books/                      # Raw source files (PDFs + EPUBs) — untouched
-│   ├── pdf/               		# PDFs of Research 
-│   └── epub/                 	# EPUBS of Researc
-│
+├── books/
+│   ├── pdf/                    # source PDFs (gitignored)
+│   └── epub/                   # source EPUBs (gitignored)
 ├── processed/
-│   ├── markdown/               # One .md file per book after conversion
-│   └── chunks/                 # Chunked JSON files ready for embedding
-│
-├── db/                         # Vector store (auto-generated, don't edit)
-│
-├── pipeline/                   # All processing scripts
-│   ├── convert.py              # PDF/EPUB → Markdown
-│   ├── chunk.py                # Markdown → structured JSON chunks
-│   ├── embed.py                # Chunks → Vectors
-│   └── run_all.py              # Coordinator: runs all three in parallel
-│
-├── app/                        # The UI
-│   ├── main.py                 # Streamlit app entry point
-│   └── search.py               # Query logic against db
-│
-├── config.py                   # Paths, model names, chunk sizes — all config in one place
+│   └── markdown/               # converted .md files — auto-generated, inspectable
+├── db/                         # Qdrant vector store (auto-generated)
+├── app/
+│   ├── main.py                 # FastAPI app
+│   ├── search.py               # query logic
+│   └── templates/
+│       └── index.html          # UI
+├── config.py
+├── ingest.py                   # run this to index your books
 ├── requirements.txt
-└── README.md                   # This file
+└── README.md
 ```
 
 ---
 
 ## Tech Stack
 
-| Layer | Tool | Why |
-|---|---|---|
-| PDF conversion | `pymupdf4llm` | Best quality text extraction from PDFs, LLM-optimized output |
-| EPUB conversion | `ebooklib` + `html2text` | Clean EPUB-to-text, handles Osho's talk format well |
-| Intermediate format | Markdown (`.md`) | Human-readable, fast to process, easy to inspect and debug |
-| Chunking | Custom Python | Paragraph-aware splitting — respects Osho's natural talk rhythm |
-| Embeddings | `nomic-embed-text` via Ollama | Runs fully local, free, strong semantic quality |
-| Vector store | `ChromaDB` | Local, no server needed, Python-native, persistent |
-| UI | `Streamlit` | Simple, fast to build, runs in browser, no frontend code needed |
-| Parallel processing | `concurrent.futures` | Built into Python, no heavy dependencies |
-| Environment | Python 3.11+ | Standard |
+| Layer | Tool |
+|---|---|
+| PDF extraction | `pymupdf4llm` |
+| EPUB extraction | `ebooklib` + `html2text` |
+| Embeddings | OpenAI `text-embedding-3-small` |
+| Vector store | Qdrant (local) |
+| API | FastAPI |
 
-**Everything runs locally. No API keys. No subscriptions. No data leaves your machine.**
+**Requires:** Python 3.11+, an OpenAI API key
 
 ---
 
-## Phases
+## Setup
 
-### Phase 0 — Setup
-- Install dependencies: Python, Ollama, ChromaDB, Streamlit, pymupdf4llm, ebooklib
-- Pull the `nomic-embed-text` model via Ollama
-- Confirm folder structure exists
-- Write `config.py` with all paths
+```bash
+pip install -r requirements.txt
+export OPENAI_API_KEY=your_key_here
+```
 
-### Phase 1 — Conversion (PDF + EPUB → Markdown)
-- Script: `pipeline/convert.py`
-- Reads every file in `books/`
-- Detects format (PDF vs EPUB) and routes accordingly
-- Outputs one clean `.md` file per book into `processed/markdown/`
-- Adds YAML frontmatter: `title`, `source_file`, `format`
-- Skips already-converted files (idempotent — safe to re-run)
+Add your books to `books/pdf/` and `books/epub/`.
 
-### Phase 2 — Chunking (Markdown → JSON)
-- Script: `pipeline/chunk.py`
-- Reads each `.md` file
-- Splits into paragraph-cluster chunks (~400 words each)
-- Each chunk stored as JSON with: `chunk_id`, `book_title`, `text`, `word_count`
-- Output goes to `processed/chunks/`
+---
 
-### Phase 3 — Embedding (JSON → ChromaDB)
-- Script: `pipeline/embed.py`
-- Reads all chunk JSON files
-- Sends each chunk's text to `nomic-embed-text` via Ollama
-- Stores vector + metadata in ChromaDB at `db/`
-- Idempotent — checks if chunk already embedded before processing
+## Indexing Your Books
 
-### Phase 4 — Parallel Pipeline
-- Script: `pipeline/run_all.py`
-- Runs conversion, chunking, and embedding across all books in parallel
-- Uses `concurrent.futures.ThreadPoolExecutor`
-- Logs progress, errors, skipped files
-- Estimated runtime: 1–3 hours for 100+ books (first run only)
+```bash
+python ingest.py
+```
 
-### Phase 5 — UI
-- Script: `app/main.py`
-- Streamlit app
-- Single search bar: type a topic, question, or phrase
-- Returns top N passages, each showing: passage text + book title
-- Adjustable result count
-- Clean, readable layout — built for reading, not for showing off
+This converts every book to Markdown, chunks it into ~200-word passages, embeds each chunk with OpenAI, and stores the vectors in Qdrant. Idempotent — safe to re-run, only processes new files.
+
+First run on a large library takes a while and costs roughly $1 in OpenAI API usage. After that, searches are free.
+
+---
+
+## Running the App
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Open `http://localhost:8000`.
+
+---
+
+## Deploying (When You Need Shared Access)
+
+```bash
+railway up
+```
+
+Or push to Render, Fly.io — any Python host works. Free tier is sufficient.
 
 ---
 
 ## Key Design Decisions
 
-**Why Markdown as intermediate format?**  
-It's the most inspectable format at this scale. If something looks wrong in the search results, you can open the `.md` file and see exactly what the converter produced. Debugging 100 binary files is painful; debugging 100 text files is not.
+**Why Markdown as intermediate format?**
+Every book becomes a human-readable `.md` file before chunking. If a passage looks wrong in search results, you can open the file and see exactly what the converter produced.
 
-**Why ChromaDB over alternatives?**  
-Runs embedded in Python — no server process, no Docker, no setup. The database is just a folder. Works for personal scale (100+ books is well within its range). Can always migrate later.
+**Why Qdrant?**
+Local mode is just a folder — no server, no Docker. When you need to scale or share the DB across projects, Qdrant runs as a server with no schema changes required.
 
-**Why Ollama + nomic-embed-text over OpenAI embeddings?**  
-This is personal research material. Keeping it fully local means no privacy concerns, no ongoing costs, and no dependency on external services. `nomic-embed-text` is competitive quality for this use case.
+**Why OpenAI embeddings over a local model?**
+One-time cost (~$1 for a large library), no local GPU or model management, and `text-embedding-3-small` is genuinely better for semantic retrieval than local alternatives at this scale.
 
-**Why Streamlit over a custom UI?**  
-You're writing a book, not building a product. Streamlit gives you a working browser UI in ~50 lines of Python. The goal is the passages, not the interface.
+**Why 200-word chunks?**
+Smaller chunks produce more precise semantic matches. Results feel targeted rather than overwhelming. You read what's returned rather than skimming a wall of text.
 
----
+**Why FastAPI over Streamlit?**
+This tool is part of a larger system. The same FastAPI backend will feed a future chat interface (Channel) without rebuilding the stack. Deploying for two users is a `railway up` away.
 
-## Open Decisions (Resolve When You Get There)
-
-- [ ] **Chunk size**: 400 words is a starting point. May need tuning after seeing real results.
-- [ ] **Result count**: How many passages per search? Start with 10, adjust.
-- [ ] **Filtering**: Do you want to filter by book, or always search across all books?
-- [ ] **Saving passages**: Do you want to mark/save passages inside the tool, or just read and copy manually?
 ---
 
 *Last updated: April 2026*
