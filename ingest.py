@@ -16,6 +16,7 @@ Usage:
     python ingest.py
 """
 
+import atexit
 import logging
 import os
 import re
@@ -63,6 +64,23 @@ def get_qdrant_client() -> QdrantClient:
     if qdrant_client is None:
         qdrant_client = QdrantClient(path=str(config.DB_DIR))
     return qdrant_client
+
+
+def close_qdrant_client() -> None:
+    """Close Qdrant client gracefully, handling shutdown edge cases."""
+    global qdrant_client
+    if qdrant_client is not None:
+        try:
+            qdrant_client.close()
+        except Exception:
+            # Ignore errors during shutdown (sys.meta_path may be None)
+            pass
+        finally:
+            qdrant_client = None
+
+
+# Register cleanup handler for graceful shutdown
+atexit.register(close_qdrant_client)
 
 
 def ensure_collection() -> None:
@@ -583,6 +601,9 @@ def main():
         logger.warning(f"  Errors: {len(errors)}")
         for name, err in errors[:5]:
             logger.warning(f"    - {name}: {err}")
+
+    # Explicitly close client before exit to avoid shutdown warnings
+    close_qdrant_client()
 
 
 if __name__ == "__main__":

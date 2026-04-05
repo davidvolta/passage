@@ -20,3 +20,7 @@ venv/
 
 # Claude Code
 .claude/
+
+# Generated/processed files
+processed/
+db/
