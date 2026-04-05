@@ -1,0 +1,10 @@
+pymupdf4llm
+ebooklib
+html2text
+qdrant-client
+openai
+fastapi
+uvicorn
+jinja2
+PyYAML
+python-slugify
