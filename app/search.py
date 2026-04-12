@@ -23,7 +23,7 @@ def _get_openai() -> OpenAI:
 def _get_qdrant() -> QdrantClient:
     global _qdrant
     if _qdrant is None:
-        _qdrant = QdrantClient(path=str(config.DB_DIR))
+        _qdrant = QdrantClient(url=config.QDRANT_URL)
     return _qdrant
 
 

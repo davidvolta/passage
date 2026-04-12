@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,7 +16,8 @@ BOOKS_EPUB_DIR = ROOT / "books" / "epub"
 MARKDOWN_DIR = ROOT / "processed" / "markdown"
 
 # ── Database ─────────────────────────────────────────────────────────────────
-DB_DIR = ROOT / "db"
+DB_DIR = ROOT / "db"  # legacy local path (used for migration)
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = "passages"
 
 # ── Embeddings ───────────────────────────────────────────────────────────────
@@ -31,7 +33,7 @@ DEFAULT_TOP_N = 10
 MAX_TOP_N = 50
 
 # ── Parallelism ──────────────────────────────────────────────────────────────
-MAX_WORKERS = 4
+MAX_WORKERS = 1
 
 # ── Saved Passages ───────────────────────────────────────────────────────────
 SAVED_PASSAGES_FILE = ROOT / "saved_passages.json"

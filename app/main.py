@@ -1,6 +1,8 @@
 """FastAPI app for searching and saving book passages."""
 
 import json
+import re
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Query, Request
@@ -9,9 +11,19 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 import config
-from app.search import search
+from app.channel import router as channel_router
+from app.search import _get_openai, _get_qdrant, search
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _get_openai()
+    _get_qdrant()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(channel_router)
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
@@ -31,9 +43,95 @@ def _write_saved(saved: list[dict]) -> None:
     config.SAVED_PASSAGES_FILE.write_text(json.dumps(saved, indent=2))
 
 
+@app.get("/api/words")
+async def api_words():
+    words_file = config.ROOT / "words.json"
+    if words_file.exists():
+        return json.loads(words_file.read_text())
+    return []
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(request, "index.html")
+
+
+@app.get("/channel", response_class=HTMLResponse)
+async def channel_page(request: Request):
+    return templates.TemplateResponse(request, "channel.html")
+
+
+@app.get("/stories", response_class=HTMLResponse)
+async def stories_page(request: Request):
+    return templates.TemplateResponse(request, "stories.html")
+
+
+def _parse_stories() -> list[dict]:
+    """Parse stories.md and return list of stories."""
+    stories_file = config.ROOT / "stories.md"
+    if not stories_file.exists():
+        return []
+
+    content = stories_file.read_text(encoding="utf-8")
+    stories = []
+    current_book = None
+
+    # Split by headers
+    lines = content.split("\n")
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        # Book header (## Book Title)
+        if line.startswith("## "):
+            current_book = line[3:].strip()
+            i += 1
+            continue
+
+        # Story header (### N. (score: X.X))
+        if line.startswith("### ") and "score:" in line:
+            # Extract score
+            score_match = re.search(r'score:\s*([\d.]+)', line)
+            score = float(score_match.group(1)) if score_match else 0.0
+
+            # Collect story text until next separator or header
+            story_lines = []
+            i += 1
+
+            while i < len(lines):
+                next_line = lines[i]
+
+                # Stop at separator, next story, or indicators
+                if next_line.startswith("---") or next_line.startswith("### ") or next_line.startswith("## "):
+                    break
+                if next_line.startswith("*Indicators:"):
+                    i += 1
+                    continue
+                if next_line.strip() == "":
+                    i += 1
+                    continue
+
+                story_lines.append(next_line)
+                i += 1
+
+            if story_lines and current_book:
+                text = "\n".join(story_lines).strip()
+                if len(text) > 50:
+                    stories.append({
+                        "book": current_book,
+                        "text": text,
+                        "score": score
+                    })
+            continue
+
+        i += 1
+
+    return stories
+
+
+@app.get("/api/stories")
+async def api_stories():
+    return _parse_stories()
 
 
 @app.get("/api/search")

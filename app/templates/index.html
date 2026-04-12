@@ -7,81 +7,251 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 40px 20px; }
-  h1 { font-size: 1.8rem; margin-bottom: 4px; }
-  .subtitle { color: #888; font-size: 0.95rem; margin-bottom: 32px; }
-  .search-box { display: flex; gap: 8px; margin-bottom: 12px; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+  h1 { font-size: 1.8rem; }
+  .channel-link { font-size: 0.9rem; color: #aaa; text-decoration: none; margin-right: 12px; }
+  .channel-link:hover { color: #666; }
+  .stories-link { font-size: 0.9rem; color: #aaa; text-decoration: none; margin-right: 12px; }
+  .stories-link:hover { color: #666; }
+  .star-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; }
+  .star-btn svg { width: 22px; height: 22px; display: block; }
+  .search-box { display: flex; gap: 8px; margin-bottom: 48px; }
   .search-box input { flex: 1; padding: 10px 14px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
   .search-box input:focus { outline: none; border-color: #666; }
   .search-box button { padding: 10px 20px; font-size: 1rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
   .search-box button:hover { background: #444; }
-  .tabs { display: flex; gap: 16px; margin-bottom: 24px; }
-  .tabs button { background: none; border: none; font-size: 0.95rem; color: #888; cursor: pointer; padding: 4px 0; border-bottom: 2px solid transparent; font-family: inherit; }
-  .tabs button.active { color: #2a2a2a; border-bottom-color: #2a2a2a; }
-  .status { color: #888; font-size: 0.9rem; margin-bottom: 16px; }
-  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
-  .passage-text { font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; margin-bottom: 12px; }
+  #home { position: relative; width: 100%; height: calc(100vh - 240px); overflow: hidden; }
+  .word-particle { position: absolute; font-size: 1.15rem; color: #2a2a2a; white-space: nowrap; cursor: pointer; user-select: none; pointer-events: auto; }
+  .word-particle:hover { text-decoration: underline; }
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; }
+  .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; }
   .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
   .passage-meta .book { font-style: italic; }
   .passage-meta button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem; color: #666; font-family: inherit; }
   .passage-meta button:hover { border-color: #888; color: #2a2a2a; }
   .passage-meta button.saved { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
+  .separator { display: flex; justify-content: center; padding: 28px 0; }
+  .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .end-dot { display: flex; justify-content: center; padding-top: 120px; padding-bottom: 80px; }
+  .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
   .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
   .spinner { display: none; color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+  #sentinel { height: 1px; }
 </style>
 </head>
 <body>
 
-<h1>Passage</h1>
-<p class="subtitle">Search across your book library</p>
+<div class="header">
+  <h1>Osho Says</h1>
+  <div style="display:flex;align-items:center">
+  <a class="stories-link" href="/stories">stories</a>
+  <a class="channel-link" href="/channel">channel</a>
+  <button class="star-btn" id="starBtn" onclick="toggleSaved()" title="Saved passages">
+    <svg id="starSvg" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1.5" stroke-linejoin="round">
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+    </svg>
+  </button>
+  </div>
+</div>
 
 <div class="search-box">
   <input type="text" id="query" placeholder="Type a topic or question..." autofocus>
   <button onclick="doSearch()">Search</button>
 </div>
 
-<div class="tabs">
-  <button class="active" onclick="showTab('results')">Results</button>
-  <button onclick="showTab('saved')">Saved</button>
-</div>
-
-<div class="spinner" id="spinner">Searching...</div>
-<div class="status" id="status"></div>
-
-<div id="results"></div>
+<div id="home"></div>
+<div class="spinner" id="spinner">Searching…</div>
+<div id="results" style="display:none"></div>
 <div id="saved" style="display:none"></div>
+<div id="sentinel"></div>
 
 <script>
 const $ = id => document.getElementById(id);
 let savedIds = new Set();
+let allPassages = [];
+let renderedCount = 0;
+let showingSaved = false;
+const PAGE_SIZE = 10;
 
-// Load saved passages on startup
+// ── Home animation ────────────────────────────────────────────────────────────
+let WORDS = [];
+fetch('/api/words').then(r => r.json()).then(w => { if (w.length) WORDS = w; });
+
+let particles = [];
+let homeRunning = false;
+let animFrame;
+let spawnInterval;
+
+function startHome() {
+  const home = $('home');
+  home.style.display = '';
+  homeRunning = true;
+  animFrame = requestAnimationFrame(animateHome);
+  // stagger first few words so they stream out from center naturally
+  [0, 400, 800, 1200, 1600].forEach(delay => {
+    setTimeout(() => { if (homeRunning) spawnWord(0); }, delay);
+  });
+  spawnInterval = setInterval(() => { if (homeRunning) spawnWord(0); }, 1600);
+}
+
+function stopHome() {
+  homeRunning = false;
+  $('home').style.display = 'none';
+  clearInterval(spawnInterval);
+  cancelAnimationFrame(animFrame);
+  particles.forEach(p => p.el.remove());
+  particles = [];
+}
+
+function spawnWord(initialDist) {
+  const home = $('home');
+  const cx = home.offsetWidth / 2;
+  const cy = home.offsetHeight / 2;
+  const word = WORDS[Math.floor(Math.random() * WORDS.length)];
+  const angle = Math.random() * Math.PI * 2;
+  const speed = 0.7 + Math.random() * 0.5;
+  const el = document.createElement('span');
+  el.className = 'word-particle';
+  el.textContent = word;
+  el.style.opacity = '0';
+  el.addEventListener('click', () => searchFor(word));
+  home.appendChild(el);
+  particles.push({ el, cx, cy, angle, speed, dist: initialDist || 0 });
+}
+
+function animateHome() {
+  const maxDist = 320;
+  const fadeInEnd = 40;
+  const fadeOutStart = 100;
+  const toRemove = [];
+
+  particles.forEach((p, i) => {
+    p.dist += p.speed;
+    const x = p.cx + Math.cos(p.angle) * p.dist;
+    const y = p.cy + Math.sin(p.angle) * p.dist;
+    const scale = 1 + (p.dist / maxDist) * 1.4;
+    p.el.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(3)})`;
+    p.el.style.left = x + 'px';
+    p.el.style.top = y + 'px';
+
+    let opacity;
+    if (p.dist < fadeInEnd) {
+      opacity = (p.dist / fadeInEnd) * 0.6;
+    } else if (p.dist < fadeOutStart) {
+      opacity = 0.6;
+    } else {
+      opacity = 0.6 * (1 - (p.dist - fadeOutStart) / (maxDist - fadeOutStart));
+    }
+
+    if (p.dist >= maxDist) {
+      p.el.remove();
+      toRemove.push(i);
+    } else {
+      p.el.style.opacity = Math.max(0, opacity);
+    }
+  });
+
+  toRemove.reverse().forEach(i => particles.splice(i, 1));
+  if (homeRunning) animFrame = requestAnimationFrame(animateHome);
+}
+
+function searchFor(word) {
+  $('query').value = word;
+  doSearch();
+}
+
+// ── App state ─────────────────────────────────────────────────────────────────
 fetch('/api/saved').then(r => r.json()).then(data => {
   data.forEach(p => savedIds.add(p.chunk_id));
+  updateStar();
 });
 
 $('query').addEventListener('keydown', e => {
   if (e.key === 'Enter') doSearch();
 });
 
+startHome();
+
+function updateStar() {
+  $('starSvg').setAttribute('fill', savedIds.size > 0 ? '#2a2a2a' : 'none');
+}
+
+async function toggleSaved() {
+  showingSaved = !showingSaved;
+  if (showingSaved) {
+    stopHome();
+    $('results').style.display = 'none';
+    $('spinner').style.display = 'none';
+    $('saved').style.display = '';
+    const res = await fetch('/api/saved');
+    const data = await res.json();
+    if (!data.length) {
+      $('saved').innerHTML = '<div class="empty">No saved passages yet</div>';
+    } else {
+      $('saved').innerHTML = data.map((p, i) =>
+        (i > 0 ? '<div class="separator"></div>' : '') + passageCard(p, true)
+      ).join('') + '<div class="end-dot"></div>';
+    }
+  } else {
+    $('saved').style.display = 'none';
+    if (!allPassages.length) {
+      startHome();
+    } else {
+      $('results').style.display = '';
+    }
+  }
+}
+
 async function doSearch() {
   const q = $('query').value.trim();
   if (!q) return;
-  showTab('results');
-  $('spinner').style.display = 'block';
-  $('status').textContent = '';
+  stopHome();
+  showingSaved = false;
+  $('saved').style.display = 'none';
+  $('results').style.display = '';
   $('results').innerHTML = '';
+  allPassages = [];
+  renderedCount = 0;
+  $('spinner').style.display = 'block';
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-    const passages = await res.json();
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&n=50`);
+    allPassages = await res.json();
     $('spinner').style.display = 'none';
-    $('status').textContent = `${passages.length} passages found`;
-    $('results').innerHTML = passages.map(p => passageCard(p, false)).join('');
+    renderMore();
   } catch (err) {
     $('spinner').style.display = 'none';
-    $('status').textContent = 'Search failed — check the console';
+    $('results').innerHTML = '<div class="empty">Search failed — check the console</div>';
     console.error(err);
   }
 }
+
+function renderMore() {
+  const batch = allPassages.slice(renderedCount, renderedCount + PAGE_SIZE);
+  if (!batch.length) return;
+  const frag = document.createDocumentFragment();
+  batch.forEach((p, i) => {
+    if (renderedCount + i > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'separator';
+      frag.appendChild(sep);
+    }
+    const div = document.createElement('div');
+    div.innerHTML = passageCard(p, false);
+    frag.appendChild(div.firstElementChild);
+  });
+  $('results').appendChild(frag);
+  renderedCount += batch.length;
+  if (renderedCount >= allPassages.length) {
+    const end = document.createElement('div');
+    end.className = 'end-dot';
+    $('results').appendChild(end);
+  }
+}
+
+const observer = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) renderMore();
+}, { rootMargin: '200px' });
+observer.observe($('sentinel'));
 
 function passageCard(p, isSavedView) {
   const isSaved = savedIds.has(p.chunk_id);
@@ -90,8 +260,9 @@ function passageCard(p, isSavedView) {
   const action = isSavedView
     ? `unsave('${p.chunk_id}')`
     : `toggleSave('${p.chunk_id}', '${esc(p.book_title)}', this)`;
-  return `<div class="passage" data-id="${p.chunk_id}">
-    <div class="passage-text">${escHtml(p.text)}</div>
+  const firstPara = escHtml(p.text.split('\n\n')[0]);
+  return `<div class="passage" data-id="${p.chunk_id}" data-text="${p.text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">
+    <div class="passage-preview">${firstPara}</div>
     <div class="passage-meta">
       <span class="book">${escHtml(p.book_title)}</span>
       <button class="${btnClass}" onclick="${action}">${btnLabel}</button>
@@ -102,7 +273,7 @@ function passageCard(p, isSavedView) {
 async function toggleSave(chunkId, bookTitle, btn) {
   if (savedIds.has(chunkId)) return;
   const card = btn.closest('.passage');
-  const text = card.querySelector('.passage-text').textContent;
+  const text = card.dataset.text;
   await fetch('/api/saved', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -111,6 +282,7 @@ async function toggleSave(chunkId, bookTitle, btn) {
   savedIds.add(chunkId);
   btn.textContent = 'Saved';
   btn.classList.add('saved');
+  updateStar();
 }
 
 async function unsave(chunkId) {
@@ -120,29 +292,7 @@ async function unsave(chunkId) {
   if (!$('saved').children.length) {
     $('saved').innerHTML = '<div class="empty">No saved passages yet</div>';
   }
-}
-
-async function showTab(tab) {
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.tabs button:nth-child(${tab === 'results' ? 1 : 2})`).classList.add('active');
-  if (tab === 'results') {
-    $('results').style.display = '';
-    $('saved').style.display = 'none';
-    $('status').style.display = '';
-    $('spinner').style.display === 'block' ? null : $('spinner').style.display = 'none';
-  } else {
-    $('results').style.display = 'none';
-    $('saved').style.display = '';
-    $('status').style.display = 'none';
-    $('spinner').style.display = 'none';
-    const res = await fetch('/api/saved');
-    const data = await res.json();
-    if (!data.length) {
-      $('saved').innerHTML = '<div class="empty">No saved passages yet</div>';
-    } else {
-      $('saved').innerHTML = data.map(p => passageCard(p, true)).join('');
-    }
-  }
+  updateStar();
 }
 
 function esc(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }

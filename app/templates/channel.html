@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Channel</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 40px 20px; display: flex; flex-direction: column; min-height: 100vh; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+  .back { font-size: 0.9rem; color: #aaa; text-decoration: none; }
+  .back:hover { color: #666; }
+  h1 { font-size: 1.8rem; }
+  .mode-toggle { display: flex; gap: 4px; }
+  .mode-pill { background: none; border: 1px solid #ddd; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: #aaa; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .mode-pill:hover { border-color: #bbb; color: #666; }
+  .mode-pill.active { background: #2a2a2a; border-color: #2a2a2a; color: #fff; }
+  .messages { flex: 1; margin-bottom: 32px; }
+  .msg { margin-bottom: 32px; }
+  .msg.user .bubble { color: #888; font-size: 0.95rem; line-height: 1.7; }
+  .msg.osho .bubble { font-size: 1rem; line-height: 1.8; }
+  .msg.osho.teaching .bubble { font-size: 1.05rem; line-height: 1.9; }
+  .msg.osho .meta { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .mode-tag { font-size: 0.75rem; color: #ccc; margin-right: auto; }
+  .save-btn { background: none; border: none; font-size: 0.8rem; color: #bbb; cursor: pointer; font-family: inherit; padding: 0; }
+  .save-btn:hover { color: #666; }
+  .save-btn.saved-state { color: #2a2a2a; }
+  .cursor { display: inline-block; width: 2px; height: 1em; background: #2a2a2a; margin-left: 2px; vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .input-row { display: flex; gap: 8px; position: sticky; bottom: 20px; background: #faf9f7; padding-top: 12px; }
+  .input-row textarea { flex: 1; padding: 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: none; height: 48px; line-height: 1.5; overflow: hidden; background: #fff; transition: border-color 0.2s; }
+  .input-row textarea:focus { outline: none; border-color: #666; }
+  .input-row textarea.teaching-mode { border-color: #2a2a2a; }
+  .input-row button { padding: 10px 20px; font-size: 0.95rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+  .input-row button:hover { background: #444; }
+  .input-row button:disabled { background: #ccc; cursor: default; }
+  .warming { position: fixed; bottom: 24px; right: 24px; font-size: 0.8rem; color: #bbb; font-family: Georgia, serif; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:baseline;gap:16px">
+    <a class="back" href="/">← search</a>
+    <h1>Channel</h1>
+  </div>
+  <div class="mode-toggle">
+    <button class="mode-pill active" onclick="setMode('casual', this)">conversation</button>
+    <button class="mode-pill" onclick="setMode('teaching', this)">teaching</button>
+    <button class="mode-pill" onclick="setMode('story', this)">story</button>
+  </div>
+</div>
+
+<div class="messages" id="messages"></div>
+<div class="warming" id="warming">warming up…</div>
+
+<div class="input-row">
+  <textarea id="input" placeholder="Ask the channel anything…" rows="1"></textarea>
+  <button id="sendBtn" onclick="send()">Ask</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let history = [];
+let streaming = false;
+let mode = 'casual';
+let ready = false;
+
+fetch('/api/search?q=love&n=1').then(() => {
+  ready = true;
+  $('warming').style.display = 'none';
+});
+
+const textarea = $('input');
+textarea.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+textarea.addEventListener('input', () => {
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
+});
+
+function setMode(m, btn) {
+  mode = m;
+  document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const placeholders = {
+    casual: 'Ask the channel anything…',
+    teaching: 'Ask a question for the book…',
+    story: 'Create a story from the channel…',
+  };
+  textarea.placeholder = placeholders[m];
+  textarea.classList.toggle('teaching-mode', m !== 'casual');
+}
+
+async function send() {
+  const text = textarea.value.trim();
+  if (!text || streaming) return;
+
+  const currentMode = mode;
+  appendMessage('user', text);
+  history.push({ role: 'user', content: text });
+  textarea.value = '';
+  textarea.style.height = '48px';
+  $('sendBtn').disabled = true;
+  streaming = true;
+
+  const oshoMsg = appendMessage('osho', '', currentMode);
+  const bubble = oshoMsg.querySelector('.bubble');
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  bubble.appendChild(cursor);
+
+  let fullText = '';
+
+  try {
+    const res = await fetch('/api/channel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: history.slice(0, -1), mode: currentMode }),
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6);
+        if (payload === '[DONE]') break;
+        try {
+          const token = JSON.parse(payload);
+          fullText += token;
+          bubble.textContent = fullText;
+          bubble.appendChild(cursor);
+          window.scrollTo(0, document.body.scrollHeight);
+        } catch {}
+      }
+    }
+  } catch (err) {
+    bubble.textContent = 'Something went wrong.';
+    console.error(err);
+  }
+
+  cursor.remove();
+  history.push({ role: 'assistant', content: fullText });
+
+  const meta = oshoMsg.querySelector('.meta');
+  if (currentMode !== 'casual') {
+    const tag = document.createElement('span');
+    tag.className = 'mode-tag';
+    tag.textContent = currentMode;
+    meta.appendChild(tag);
+  }
+  const btn = document.createElement('button');
+  btn.className = 'save-btn';
+  btn.textContent = 'save';
+  btn.onclick = () => saveResponse(fullText, btn);
+  meta.appendChild(btn);
+
+  $('sendBtn').disabled = false;
+  streaming = false;
+}
+
+function appendMessage(role, text, msgMode) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}${msgMode === 'teaching' ? ' teaching' : ''}`;
+  div.innerHTML = role === 'osho'
+    ? `<div class="bubble"></div><div class="meta"></div>`
+    : `<div class="bubble">${escHtml(text)}</div>`;
+  $('messages').appendChild(div);
+  window.scrollTo(0, document.body.scrollHeight);
+  return div;
+}
+
+async function saveResponse(text, btn) {
+  const chunkId = 'channel_' + Date.now();
+  await fetch('/api/saved', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chunk_id: chunkId, book_title: 'the channel', text }),
+  });
+  btn.textContent = 'saved';
+  btn.classList.add('saved-state');
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>
