@@ -36,4 +36,11 @@ MAX_TOP_N = 50
 MAX_WORKERS = 1
 
 # ── Saved Passages ───────────────────────────────────────────────────────────
-SAVED_PASSAGES_FILE = ROOT / "saved_passages.json"
+# Use Railway volume if available (persisted across deploys), else local file
+SAVED_PASSAGES_DIR = Path("/data") if Path("/data").exists() else ROOT
+SAVED_PASSAGES_FILE = SAVED_PASSAGES_DIR / "saved_passages.json"
+
+# ── Notion ───────────────────────────────────────────────────────────────────
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")
+NOTION_PAGE_ID = os.getenv("NOTION_PAGE_ID")
+NOTION_COLLECTION = "notion_words"

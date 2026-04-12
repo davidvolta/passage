@@ -3,7 +3,7 @@ words.py — Cluster passage embeddings and extract representative words per clu
 Writes results to words.json for the home screen animation.
 
 Usage:
-    python words.py [--clusters 40]
+    python words.py [--clusters 40] [--collection passages|notion_words]
 """
 
 import argparse
@@ -34,12 +34,12 @@ EXTRA_STOPWORDS = {
 }
 
 
-def fetch_all_points(client: QdrantClient):
+def fetch_all_points(client: QdrantClient, collection_name: str):
     texts, vectors = [], []
     offset = None
     while True:
         result = client.scroll(
-            collection_name=config.QDRANT_COLLECTION,
+            collection_name=collection_name,
             offset=offset,
             limit=500,
             with_payload=['text'],
@@ -78,13 +78,23 @@ def top_word_for_cluster(cluster_texts: list[str]) -> str | None:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--clusters', type=int, default=40)
+    parser.add_argument('--collection', type=str, default='passages',
+                       help='Qdrant collection to use (passages or notion_words)')
     args = parser.parse_args()
 
-    print("Connecting to Qdrant...")
-    client = QdrantClient(path=str(config.DB_DIR))
+    collection_name = args.collection
+    # Determine output file based on collection
+    if collection_name == config.NOTION_COLLECTION:
+        out_filename = 'words_notion.json'
+    else:
+        out_filename = 'words.json'
+
+    print(f"Connecting to Qdrant...")
+    print(f"Using collection: {collection_name}")
+    client = QdrantClient(url=config.QDRANT_URL)
 
     print("Fetching passages...")
-    texts, vectors = fetch_all_points(client)
+    texts, vectors = fetch_all_points(client, collection_name)
     client.close()
     print(f"  {len(texts)} passages")
 
@@ -110,7 +120,7 @@ def main():
     print(f"\n  {len(words)} words found:")
     print(' ', ', '.join(words))
 
-    out = config.ROOT / 'words.json'
+    out = config.ROOT / out_filename
     out.write_text(json.dumps(words, indent=2))
     print(f"\nWritten to {out}")
 
