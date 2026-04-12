@@ -15,11 +15,12 @@
   .stories-link:hover { color: #666; }
   .star-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; }
   .star-btn svg { width: 22px; height: 22px; display: block; }
-  .search-box { display: flex; gap: 8px; margin-bottom: 48px; }
-  .search-box input { flex: 1; padding: 10px 14px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
-  .search-box input:focus { outline: none; border-color: #666; }
-  .search-box button { padding: 10px 20px; font-size: 1rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
-  .search-box button:hover { background: #444; }
+  .input-row { display: flex; gap: 8px; margin-bottom: 48px; }
+  .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; }
+  .input-wrapper input { width: 100%; padding: 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; background: #fff; transition: border-color 0.2s; }
+  .input-wrapper input:focus { outline: none; border-color: #666; }
+  .input-row button { padding: 10px 20px; font-size: 0.95rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .input-row button:hover { background: #444; }
   #home { position: relative; width: 100%; height: calc(100vh - 240px); overflow: hidden; }
   .word-particle { position: absolute; font-size: 1.15rem; color: #2a2a2a; white-space: nowrap; cursor: pointer; user-select: none; pointer-events: auto; }
   .word-particle:hover { text-decoration: underline; }
@@ -54,8 +55,10 @@
   </div>
 </div>
 
-<div class="search-box">
-  <input type="text" id="query" placeholder="Type a topic or question..." autofocus>
+<div class="input-row">
+  <div class="input-wrapper">
+    <input type="text" id="query" placeholder="Type a topic or question..." autofocus>
+  </div>
   <button onclick="doSearch()">Search</button>
 </div>
 

@@ -28,9 +28,17 @@
   .cursor { display: inline-block; width: 2px; height: 1em; background: #2a2a2a; margin-left: 2px; vertical-align: middle; animation: blink 1s step-end infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   .input-row { display: flex; gap: 8px; position: sticky; bottom: 20px; background: #faf9f7; padding-top: 12px; }
-  .input-row textarea { flex: 1; padding: 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: none; height: 48px; line-height: 1.5; overflow: hidden; background: #fff; transition: border-color 0.2s; }
-  .input-row textarea:focus { outline: none; border-color: #666; }
-  .input-row textarea.teaching-mode { border-color: #2a2a2a; }
+  .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; }
+  .input-wrapper textarea { width: 100%; padding: 10px 36px 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: none; height: 48px; line-height: 1.5; overflow: hidden; background: #fff; transition: border-color 0.2s; }
+  .input-wrapper textarea:focus { outline: none; border-color: #666; }
+  .input-wrapper textarea.teaching-mode { border-color: #2a2a2a; }
+  .mode-dropdown { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; padding: 4px; color: #bbb; font-size: 0.6rem; user-select: none; transition: color 0.2s; }
+  .mode-dropdown:hover { color: #666; }
+  .mode-dropdown-menu { position: absolute; bottom: calc(100% + 4px); right: 0; background: #fff; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: none; min-width: 120px; z-index: 10; }
+  .mode-dropdown-menu.open { display: block; }
+  .mode-dropdown-item { padding: 8px 14px; font-size: 0.85rem; color: #666; cursor: pointer; white-space: nowrap; }
+  .mode-dropdown-item:hover { background: #f5f5f5; color: #2a2a2a; }
+  .mode-dropdown-item.active { color: #2a2a2a; font-weight: 500; }
   .input-row button { padding: 10px 20px; font-size: 0.95rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
   .input-row button:hover { background: #444; }
   .input-row button:disabled { background: #ccc; cursor: default; }
@@ -44,18 +52,21 @@
     <a class="back" href="/">← search</a>
     <h1>Channel</h1>
   </div>
-  <div class="mode-toggle">
-    <button class="mode-pill active" onclick="setMode('casual', this)">conversation</button>
-    <button class="mode-pill" onclick="setMode('teaching', this)">teaching</button>
-    <button class="mode-pill" onclick="setMode('story', this)">story</button>
-  </div>
 </div>
 
 <div class="messages" id="messages"></div>
 <div class="warming" id="warming">warming up…</div>
 
 <div class="input-row">
-  <textarea id="input" placeholder="Ask the channel anything…" rows="1"></textarea>
+  <div class="input-wrapper">
+    <textarea id="input" placeholder="Ask the channel anything…" rows="1"></textarea>
+    <div class="mode-dropdown" id="modeDropdown" onclick="toggleModeDropdown(event)" title="Change mode">▼</div>
+    <div class="mode-dropdown-menu" id="modeDropdownMenu">
+      <div class="mode-dropdown-item active" data-mode="casual" onclick="setMode('casual')">conversation</div>
+      <div class="mode-dropdown-item" data-mode="teaching" onclick="setMode('teaching')">teaching</div>
+      <div class="mode-dropdown-item" data-mode="story" onclick="setMode('story')">story</div>
+    </div>
+  </div>
   <button id="sendBtn" onclick="send()">Ask</button>
 </div>
 
@@ -71,7 +82,7 @@ fetch('/api/search?q=love&n=1').then(() => {
   $('warming').style.display = 'none';
 });
 
-const textarea = $('input');
+const textarea = document.querySelector('.input-wrapper textarea');
 textarea.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
 });
@@ -80,10 +91,20 @@ textarea.addEventListener('input', () => {
   textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
 });
 
-function setMode(m, btn) {
+function toggleModeDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('modeDropdownMenu').classList.toggle('open');
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('modeDropdownMenu').classList.remove('open');
+});
+
+function setMode(m) {
   mode = m;
-  document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.mode-dropdown-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.mode === m);
+  });
   const placeholders = {
     casual: 'Ask the channel anything…',
     teaching: 'Ask a question for the book…',
