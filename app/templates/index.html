@@ -4,13 +4,14 @@
 
 {% block styles %}
   #home { position: relative; width: 100%; height: calc(100vh - 140px); overflow: hidden; margin-top: 20px; }
-  .word-particle { position: absolute; font-size: 1.15rem; color: #2a2a2a; white-space: nowrap; cursor: pointer; user-select: none; pointer-events: auto; }
+  .word-particle { position: absolute; font-size: 1.15rem; color: #f0ead8; white-space: nowrap; cursor: pointer; user-select: none; pointer-events: auto; }
   .word-particle:hover { text-decoration: underline; }
-
+  #notion-updated { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #4a4440; font-family: Georgia, serif; white-space: nowrap; pointer-events: none; }
 {% endblock %}
 
 {% block content %}
 <div id="home"></div>
+<div id="notion-updated"></div>
 {% endblock %}
 
 {% block scripts %}
@@ -100,7 +101,21 @@ function animateHome() {
   animFrame = requestAnimationFrame(animateHome);
 }
 
+async function loadNotionUpdated() {
+  try {
+    const resp = await fetch('/api/notion-updated');
+    const data = await resp.json();
+    if (data.updated) {
+      const d = new Date(data.updated);
+      const date = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      document.getElementById('notion-updated').textContent = 'last synced ' + date + ' at ' + time;
+    }
+  } catch {}
+}
+
 // Initialize
 loadWords().then(startHome);
+loadNotionUpdated();
 </script>
 {% endblock %}

@@ -3,6 +3,7 @@
 import json
 import re
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, Query, Request
@@ -44,6 +45,16 @@ def _load_saved() -> list[dict]:
 def _write_saved(saved: list[dict]) -> None:
     config.SAVED_PASSAGES_FILE.parent.mkdir(parents=True, exist_ok=True)
     config.SAVED_PASSAGES_FILE.write_text(json.dumps(saved, indent=2))
+
+
+@app.get("/api/notion-updated")
+async def api_notion_updated():
+    words_file = config.ROOT / "words_notion.json"
+    if not words_file.exists():
+        return {"updated": None}
+    mtime = words_file.stat().st_mtime
+    dt = datetime.fromtimestamp(mtime, tz=timezone.utc)
+    return {"updated": dt.isoformat()}
 
 
 @app.get("/api/words")

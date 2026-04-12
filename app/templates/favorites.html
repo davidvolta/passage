@@ -2,19 +2,20 @@
 
 {% block styles %}
   .content { padding-top: 32px; }
-  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; transition: opacity 0.4s ease; cursor: pointer; }
-  .passage:hover { border-color: #ccc; }
+  .passage { background: #252525; border: 1px solid #2e2e2e; border-radius: 8px; padding: 20px; transition: opacity 0.4s ease, border-color 0.15s; cursor: pointer; }
+  .passage:hover { border-color: #444; }
   .passage.removing { opacity: 0.2; }
   .passage.removing .heart-btn { pointer-events: auto; cursor: pointer; }
-  .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; }
-  .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
+  .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; color: #e8e2d0; }
+  .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #6a6460; }
   .passage-meta .book { font-style: italic; }
-  .heart-btn { background: none; border: none; padding: 0; cursor: pointer; font-size: 1.2rem; line-height: 1; color: #2a2a2a; }
+  .heart-btn { background: none; border: none; padding: 0; cursor: pointer; font-size: 1.2rem; line-height: 1; color: #c9a96e; }
+  .heart-btn:hover { color: #e0c08a; }
   .separator { display: flex; justify-content: center; padding: 28px 0; }
-  .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .separator::after { content: ''; width: 6px; height: 6px; background: #333; border-radius: 50%; display: block; }
   .end-dot { display: flex; justify-content: center; padding-top: 120px; padding-bottom: 80px; }
-  .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
-  .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
+  .end-dot::after { content: ''; width: 6px; height: 6px; background: #333; border-radius: 50%; display: block; }
+  .empty { color: #4a4440; text-align: center; padding: 60px 0; font-size: 0.95rem; }
 {% endblock %}
 
 {% block content %}
