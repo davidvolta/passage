@@ -45,8 +45,13 @@ def _write_saved(saved: list[dict]) -> None:
 
 
 @app.get("/api/words")
-async def api_words():
-    words_file = config.ROOT / "words.json"
+async def api_words(source: str = Query(default="books", description="Word source: 'books' or 'notion'")):
+    """Return words for the animation. source='books' or 'notion'."""
+    if source == "notion":
+        words_file = config.ROOT / "words_notion.json"
+    else:
+        words_file = config.ROOT / "words.json"
+
     if words_file.exists():
         return json.loads(words_file.read_text())
     return []
