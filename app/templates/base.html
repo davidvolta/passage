@@ -7,9 +7,12 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 0 20px; }
-  .tab-bar { display: flex; border-bottom: 1px solid #e8e6e3; padding-top: 20px; position: sticky; top: 0; background: #faf9f7; z-index: 100; }
+  .tab-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e8e6e3; padding-top: 20px; position: sticky; top: 0; background: #faf9f7; z-index: 100; }
   .tab { padding: 12px 20px; font-size: 0.95rem; color: #888; text-decoration: none; font-family: inherit; border-bottom: 2px solid transparent; transition: color 0.15s; }
-  .tab-fav { margin-left: auto; font-size: 1.2rem; padding: 10px 20px; -webkit-text-stroke: 1px currentColor; }
+  .tab-home { font-size: 1.3rem; padding: 10px 20px; display: flex; align-items: center; }
+  .tab-home .nav-icon { width: 20px; height: 20px; object-fit: contain; }
+  .tab-center { display: flex; justify-content: center; flex: 1; }
+  .tab-fav { font-size: 1.2rem; padding: 10px 20px; -webkit-text-stroke: 1px currentColor; }
   .tab:hover { color: #2a2a2a; }
   .tab.active { color: #2a2a2a; border-bottom-color: #2a2a2a; }
 
@@ -28,9 +31,11 @@
 <body>
 
 <nav class="tab-bar">
-  <a href="/" class="tab {% if active_tab == 'home' %}active{% endif %}">Home</a>
-  <a href="/passages" class="tab {% if active_tab == 'passages' %}active{% endif %}">Passages</a>
-  <a href="/channel" class="tab {% if active_tab == 'channel' %}active{% endif %}">Channel</a>
+  <a href="/" class="tab tab-home {% if active_tab == 'home' %}active{% endif %}" aria-label="Home">&#9775;</a>
+  <div class="tab-center">
+    <a href="/passages" class="tab {% if active_tab == 'passages' %}active{% endif %}">Passages</a>
+    <a href="/channel" class="tab {% if active_tab == 'channel' %}active{% endif %}">Channel</a>
+  </div>
   <a href="/favorites" class="tab tab-fav {% if active_tab == 'favorites' %}active{% endif %}" aria-label="Favorites">&#9825;</a>
 </nav>
 
