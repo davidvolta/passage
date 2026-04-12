@@ -67,9 +67,9 @@ async def channel_page(request: Request):
     return templates.TemplateResponse(request, "channel.html", {"active_tab": "channel"})
 
 
-@app.get("/stories", response_class=HTMLResponse)
-async def stories_page(request: Request):
-    return templates.TemplateResponse(request, "stories.html", {"active_tab": "stories"})
+@app.get("/passages", response_class=HTMLResponse)
+async def passages_page(request: Request):
+    return templates.TemplateResponse(request, "passages.html", {"active_tab": "passages"})
 
 
 @app.get("/favorites", response_class=HTMLResponse)
@@ -146,7 +146,7 @@ async def api_stories():
 
 
 @app.get("/api/search")
-async def api_search(q: str = Query(..., min_length=1), n: int = Query(default=10, ge=1, le=50)):
+async def api_search(q: str = Query(..., min_length=1), n: int = Query(default=10, ge=1)):
     return search(q, top_n=n)
 
 

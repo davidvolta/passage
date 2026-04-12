@@ -7,93 +7,40 @@
   .word-particle { position: absolute; font-size: 1.15rem; color: #2a2a2a; white-space: nowrap; cursor: pointer; user-select: none; pointer-events: auto; }
   .word-particle:hover { text-decoration: underline; }
 
-  .word-source-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 12px 0;
-    font-size: 0.85rem;
-    color: #888;
-  }
-  .word-source-toggle label {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 16px;
-    transition: all 0.15s;
-  }
-  .word-source-toggle label:hover {
-    background: #f0f0f0;
-  }
-  .word-source-toggle input[type="radio"] {
-    display: none;
-  }
-  .word-source-toggle input[type="radio"]:checked + span {
-    color: #2a2a2a;
-    font-weight: 500;
-  }
 {% endblock %}
 
 {% block content %}
-<div class="word-source-toggle">
-  <label>
-    <input type="radio" name="wordSource" value="books" checked onchange="switchWordSource(this.value)">
-    <span>Books</span>
-  </label>
-  <label>
-    <input type="radio" name="wordSource" value="notion" onchange="switchWordSource(this.value)">
-    <span>My Words</span>
-  </label>
-</div>
-
 <div id="home"></div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 let WORDS = [];
-let currentSource = 'books';
 let particles = [];
 let animFrame;
 let spawnInterval;
 
-async function loadWords(source) {
-  const resp = await fetch(`/api/words?source=${source}`);
+async function loadWords() {
+  const resp = await fetch('/api/words?source=notion');
   WORDS = await resp.json();
-  currentSource = source;
-}
-
-function switchWordSource(source) {
-  // Clear existing particles
-  particles.forEach(p => p.el.remove());
-  particles = [];
-
-  // Load new words and restart
-  loadWords(source).then(() => {
-    // Pre-populate with new words
-    const home = document.getElementById('home');
-    const maxDist = Math.min(home.offsetWidth, home.offsetHeight) * 0.4;
-    for (let i = 0; i < 18; i++) {
-      spawnWord(Math.random() * maxDist * 0.9);
-    }
-  });
 }
 
 function startHome() {
   const home = document.getElementById('home');
   home.style.display = '';
 
-  // Pre-populate with words at various distances to avoid cold start
-  const maxDist = Math.min(home.offsetWidth, home.offsetHeight) * 0.4;
-  for (let i = 0; i < 18; i++) {
-    spawnWord(Math.random() * maxDist * 0.9);
-  }
-
   animFrame = requestAnimationFrame(animateHome);
-  spawnInterval = setInterval(() => spawnWord(0), 1600);
+
+  // Warm up gradually, then settle into normal rate
+  let count = 0;
+  const warmup = setInterval(() => {
+    spawnWord(0);
+    count++;
+    if (count >= 8) {
+      clearInterval(warmup);
+      spawnInterval = setInterval(() => spawnWord(0), 400);
+    }
+  }, 200);
 }
 
 function spawnWord(initialDist) {
@@ -110,7 +57,7 @@ function spawnWord(initialDist) {
   el.textContent = word;
   el.style.opacity = '0';
   el.addEventListener('click', () => {
-    window.location.href = '/stories?q=' + encodeURIComponent(word);
+    window.location.href = '/passages?q=' + encodeURIComponent(word);
   });
   home.appendChild(el);
   particles.push({ el, cx, cy, angle, speed, dist: initialDist || 0 });
@@ -154,6 +101,6 @@ function animateHome() {
 }
 
 // Initialize
-loadWords('books').then(startHome);
+loadWords().then(startHome);
 </script>
 {% endblock %}

@@ -12,7 +12,7 @@ def main():
         return 1
 
     # Generate words
-    result = subprocess.run([sys.executable, "words.py", "--collection", "notion_words"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "words.py", "--collection", "notion_words", "--count", "50"], capture_output=True, text=True)
     print("Words output:", result.stdout)
     if result.returncode != 0:
         print("Words generation failed:", result.stderr)

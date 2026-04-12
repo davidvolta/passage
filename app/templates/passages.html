@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Stories — Osho Says{% endblock %}
+{% block title %}Passages — Osho Says{% endblock %}
 
 {% block styles %}
   .content { padding-top: 32px; display: flex; gap: 0; }
 
   /* Sidebar */
   .sidebar { width: 0; overflow: hidden; transition: width 0.2s, padding 0.2s; border-right: none; flex-shrink: 0; }
-  .sidebar.open { width: 200px; padding-right: 20px; border-right: 1px solid #e8e6e3; }
+  .sidebar.open { width: 200px; padding-right: 20px; border-right: 1px solid #e8e6e3; margin-right: 12px; }
   .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .sidebar-header span { font-size: 0.85rem; color: #888; }
   .sidebar-close { background: none; border: none; font-size: 0.85rem; color: #bbb; cursor: pointer; font-family: inherit; padding: 0; }
@@ -23,17 +23,13 @@
   .sidebar.open + .main-col { padding-left: 20px; }
   .input-row { display: flex; gap: 8px; margin-bottom: 24px; }
   .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; }
-  .input-wrapper input { width: 100%; padding: 10px 95px 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; background: #fff; transition: border-color 0.2s; }
+  .input-wrapper input { width: 100%; padding: 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; background: #fff; transition: border-color 0.2s; }
   .input-wrapper input:focus { outline: none; border-color: #666; }
-  .mode-pill { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-family: inherit; cursor: pointer; user-select: none; background: transparent; white-space: nowrap; transition: opacity 0.15s; border: 1px solid; }
-  .mode-pill:hover { opacity: 0.7; }
-  .mode-pill.purple { color: #7c5cbf; border-color: #7c5cbf; }
-  .mode-pill.red    { color: #b04040; border-color: #b04040; }
-  .mode-pill.blue   { color: #3a6eaa; border-color: #3a6eaa; }
   .input-row .search-btn { padding: 10px 20px; font-size: 0.95rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
   .input-row .search-btn:hover { background: #444; }
   .input-row .search-btn:disabled { background: #ccc; cursor: default; }
-  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .toolbar { display: none; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .toolbar.visible { display: flex; }
   .books-btn { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; font-size: 0.85rem; color: #666; cursor: pointer; font-family: inherit; }
   .books-btn:hover { border-color: #888; color: #2a2a2a; }
   .books-btn.has-filter { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
@@ -42,15 +38,15 @@
   .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; white-space: pre-wrap; }
   .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
   .passage-meta .book { font-style: italic; }
-  .passage-meta button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem; color: #666; font-family: inherit; }
-  .passage-meta button:hover { border-color: #888; color: #2a2a2a; }
-  .passage-meta button.saved { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
+  .passage-meta button { background: none; border: none; cursor: pointer; font-size: 1rem; color: #bbb; font-family: inherit; padding: 0 4px; }
+  .passage-meta button:hover { color: #888; }
+  .passage-meta button.saved { color: #2a2a2a; }
   .separator { display: flex; justify-content: center; padding: 28px 0; }
   .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
   .end-dot { display: flex; justify-content: center; padding-top: 120px; padding-bottom: 80px; }
   .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
   .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
-  .spinner { display: none; color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+  .spinner { display: none; color: #888; font-size: 0.9rem; }
 
   /* Mobile: sidebar becomes an overlay */
   @media (max-width: 600px) {
@@ -69,7 +65,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <span>Books</span>
-      <button class="sidebar-close" onclick="toggleSidebar()">close</button>
+      <button class="sidebar-close" onclick="toggleSidebar()">&#10005;</button>
     </div>
     <ul class="book-list" id="bookList"></ul>
   </aside>
@@ -79,17 +75,15 @@
     <div class="input-row">
       <div class="input-wrapper">
         <input type="text" id="query" placeholder="Search passages..." autofocus>
-        <button class="mode-pill purple" id="modePill" onclick="cycleMode()" title="Switch search mode">semantic</button>
       </div>
       <button class="search-btn" onclick="doSearch()">Search</button>
     </div>
 
-    <div class="toolbar">
+    <div class="toolbar" id="toolbar">
       <button class="books-btn" id="booksBtn" onclick="toggleSidebar()">Books</button>
       <span class="count" id="count"></span>
+      <span class="spinner" id="spinner">Searching...</span>
     </div>
-
-    <div class="spinner" id="spinner">Searching...</div>
     <div id="results"></div>
     <div id="sentinel" style="height:1px"></div>
   </div>
@@ -99,12 +93,10 @@
 {% block scripts %}
 <script>
 const $ = id => document.getElementById(id);
-let allStories = [];
 let currentResults = [];
 let currentBook = 'all';
 let savedIds = new Set();
 let renderedCount = 0;
-let searchMode = 'semantic'; // 'semantic' or 'exact'
 const PAGE_SIZE = 10;
 
 // Load saved IDs for button state
@@ -112,83 +104,55 @@ fetch('/api/saved').then(r => r.json()).then(data => {
   data.forEach(p => savedIds.add(p.chunk_id));
 });
 
-// Load stories for browse/exact mode
-fetch('/api/stories').then(r => r.json()).then(data => {
-  allStories = data;
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get('q');
-  if (q) {
-    $('query').value = q;
-    doSearch();
-  } else {
-    showStories();
-  }
-});
+// Check for query param on load
+const params = new URLSearchParams(window.location.search);
+const initialQuery = params.get('q');
+if (initialQuery) {
+  $('query').value = initialQuery;
+  doSearch();
+} else {
+  $('results').innerHTML = '';
+  $('toolbar').classList.remove('visible');
+}
 
 $('query').addEventListener('keydown', e => {
   if (e.key === 'Enter') doSearch();
 });
-
-const MODES = [
-  { name: 'semantic', color: 'purple' },
-  { name: 'exact',    color: 'red'    },
-];
-let modeIndex = 0;
-
-function cycleMode() {
-  modeIndex = (modeIndex + 1) % MODES.length;
-  const m = MODES[modeIndex];
-  searchMode = m.name;
-  const pill = $('modePill');
-  pill.textContent = m.name;
-  pill.className = `mode-pill ${m.color}`;
-  $('query').placeholder = searchMode === 'semantic' ? 'Search passages...' : 'Filter by keyword...';
-  if ($('query').value.trim()) doSearch();
-}
 
 function toggleSidebar() {
   const sidebar = $('sidebar');
   sidebar.classList.toggle('open');
 }
 
-function showStories() {
-  currentResults = allStories;
-  currentBook = 'all';
-  renderBookList();
-  renderResults('stories');
-}
-
 async function doSearch() {
   const q = $('query').value.trim();
   if (!q) {
-    showStories();
+    $('results').innerHTML = '';
+    $('count').textContent = '';
+    $('bookList').innerHTML = '';
+    $('toolbar').classList.remove('visible');
+    currentResults = [];
     return;
   }
 
   currentBook = 'all';
+  window._currentFiltered = null;
+  $('toolbar').classList.add('visible');
+  $('spinner').style.display = 'block';
+  $('results').innerHTML = '';
+  $('count').textContent = '';
+  $('bookList').innerHTML = '';
 
-  if (searchMode === 'semantic') {
-    $('spinner').style.display = 'block';
-    $('results').innerHTML = '';
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&n=50`);
-      currentResults = await res.json();
-      $('spinner').style.display = 'none';
-      renderBookList();
-      renderResults('results');
-    } catch (err) {
-      $('spinner').style.display = 'none';
-      $('results').innerHTML = '<div class="empty">Search failed</div>';
-      console.error(err);
-    }
-  } else {
-    const lower = q.toLowerCase();
-    currentResults = allStories.filter(p =>
-      p.text.toLowerCase().includes(lower) ||
-      (p.book_title || p.book).toLowerCase().includes(lower)
-    );
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&n=500`);
+    currentResults = await res.json();
+    $('spinner').style.display = 'none';
     renderBookList();
-    renderResults('results');
+    renderResults('passages');
+  } catch (err) {
+    $('spinner').style.display = 'none';
+    $('results').innerHTML = '<div class="empty">Search failed</div>';
+    console.error(err);
   }
 }
 
@@ -214,7 +178,7 @@ function renderBookList() {
 function setBook(book) {
   currentBook = book;
   renderBookList();
-  renderResults(currentResults === allStories ? 'stories' : 'results');
+  renderResults('passages');
 }
 
 function renderResults(label) {
@@ -275,14 +239,21 @@ observer.observe($('sentinel'));
 function passageCard(p) {
   const bookTitle = p.book_title || p.book;
   const chunkId = p.chunk_id || null;
-  const firstPara = escHtml(p.text.split('\n\n')[0]);
+  const queryTerms = $('query').value.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const paras = p.text.replace(/^#+\s*/gm, '').split('\n\n').map(s => s.trim()).filter(s => s.length > 20);
+  const bestPara = paras.reduce((best, para) => {
+    const lower = para.toLowerCase();
+    const score = queryTerms.reduce((n, term) => n + (lower.includes(term) ? 1 : 0), 0);
+    return score > best.score ? { para, score } : best;
+  }, { para: paras[0] || '', score: -1 }).para;
+  const firstPara = escHtml(bestPara);
   const isSaved = chunkId && savedIds.has(chunkId);
 
   let actionBtn = '';
   if (chunkId) {
     const btnClass = isSaved ? 'saved' : '';
-    const btnLabel = isSaved ? 'Saved' : 'Save';
-    actionBtn = `<button class="${btnClass}" onclick="toggleSave('${esc(chunkId)}', '${esc(bookTitle)}', this)" data-text="${p.text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${btnLabel}</button>`;
+    const btnLabel = isSaved ? '\u2665' : '\u2661';
+    actionBtn = `<button class="save-btn ${btnClass}" onclick="toggleSave('${esc(chunkId)}', '${esc(bookTitle)}', this)" data-text="${p.text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${btnLabel}</button>`;
   }
 
   return `<div class="passage" data-id="${chunkId || ''}">
@@ -295,16 +266,22 @@ function passageCard(p) {
 }
 
 async function toggleSave(chunkId, bookTitle, btn) {
-  if (savedIds.has(chunkId)) return;
-  const text = btn.dataset.text;
-  await fetch('/api/saved', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chunk_id: chunkId, book_title: bookTitle, text })
-  });
-  savedIds.add(chunkId);
-  btn.textContent = 'Saved';
-  btn.classList.add('saved');
+  if (savedIds.has(chunkId)) {
+    await fetch('/api/saved/' + encodeURIComponent(chunkId), { method: 'DELETE' });
+    savedIds.delete(chunkId);
+    btn.textContent = '\u2661';
+    btn.classList.remove('saved');
+  } else {
+    const text = btn.dataset.text;
+    await fetch('/api/saved', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chunk_id: chunkId, book_title: bookTitle, text })
+    });
+    savedIds.add(chunkId);
+    btn.textContent = '\u2665';
+    btn.classList.add('saved');
+  }
 }
 
 function esc(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }

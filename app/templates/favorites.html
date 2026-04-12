@@ -2,12 +2,13 @@
 
 {% block styles %}
   .content { padding-top: 32px; }
-  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; }
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; transition: opacity 0.4s ease; }
+  .passage.removing { opacity: 0.2; }
+  .passage.removing .heart-btn { pointer-events: auto; cursor: pointer; }
   .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; }
   .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
   .passage-meta .book { font-style: italic; }
-  .passage-meta button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem; color: #666; font-family: inherit; }
-  .passage-meta button:hover { border-color: #888; color: #2a2a2a; }
+  .heart-btn { background: none; border: none; padding: 0; cursor: pointer; font-size: 1.2rem; line-height: 1; color: #2a2a2a; }
   .separator { display: flex; justify-content: center; padding: 28px 0; }
   .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
   .end-dot { display: flex; justify-content: center; padding-top: 120px; padding-bottom: 80px; }
@@ -23,6 +24,8 @@
 
 {% block scripts %}
 <script>
+const passagesMap = {};
+
 async function loadFavorites() {
   const res = await fetch('/api/saved');
   const data = await res.json();
@@ -32,6 +35,9 @@ async function loadFavorites() {
     container.innerHTML = '<div class="empty">No saved passages yet</div>';
     return;
   }
+
+  data.forEach(p => passagesMap[p.chunk_id] = p);
+  data.reverse();
 
   container.innerHTML = data.map((p, i) =>
     (i > 0 ? '<div class="separator"></div>' : '') + passageCard(p)
@@ -44,22 +50,28 @@ function passageCard(p) {
     <div class="passage-preview">${firstPara}</div>
     <div class="passage-meta">
       <span class="book">${escHtml(p.book_title)}</span>
-      <button onclick="remove('${esc(p.chunk_id)}', this)">Remove</button>
+      <button class="heart-btn" onclick="toggleSave('${esc(p.chunk_id)}', this)" title="Remove">&#9829;</button>
     </div>
   </div>`;
 }
 
-async function remove(chunkId, btn) {
-  await fetch('/api/saved/' + encodeURIComponent(chunkId), { method: 'DELETE' });
+async function toggleSave(chunkId, btn) {
   const card = btn.closest('.passage');
-  const prev = card.previousElementSibling;
-  const next = card.nextElementSibling;
-  if (prev && prev.classList.contains('separator')) prev.remove();
-  else if (next && next.classList.contains('separator')) next.remove();
-  card.remove();
-  const container = document.getElementById('favorites');
-  if (!container.querySelector('.passage')) {
-    container.innerHTML = '<div class="empty">No saved passages yet</div>';
+  if (card.classList.contains('removing')) {
+    // Undo: re-save
+    card.classList.remove('removing');
+    btn.innerHTML = '&#9829;';
+    const p = passagesMap[chunkId];
+    await fetch('/api/saved', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chunk_id: p.chunk_id, book_title: p.book_title, text: p.text }),
+    });
+  } else {
+    // Remove
+    btn.innerHTML = '&#9825;';
+    card.classList.add('removing');
+    await fetch('/api/saved/' + encodeURIComponent(chunkId), { method: 'DELETE' });
   }
 }
 
