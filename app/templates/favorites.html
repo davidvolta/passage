@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block styles %}
+  .content { padding-top: 32px; }
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; }
+  .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; }
+  .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
+  .passage-meta .book { font-style: italic; }
+  .passage-meta button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem; color: #666; font-family: inherit; }
+  .passage-meta button:hover { border-color: #888; color: #2a2a2a; }
+  .separator { display: flex; justify-content: center; padding: 28px 0; }
+  .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .end-dot { display: flex; justify-content: center; padding-top: 120px; padding-bottom: 80px; }
+  .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div id="favorites"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadFavorites() {
+  const res = await fetch('/api/saved');
+  const data = await res.json();
+  const container = document.getElementById('favorites');
+
+  if (!data.length) {
+    container.innerHTML = '<div class="empty">No saved passages yet</div>';
+    return;
+  }
+
+  container.innerHTML = data.map((p, i) =>
+    (i > 0 ? '<div class="separator"></div>' : '') + passageCard(p)
+  ).join('') + '<div class="end-dot"></div>';
+}
+
+function passageCard(p) {
+  const firstPara = escHtml(p.text.split('\n\n')[0]);
+  return `<div class="passage" data-id="${p.chunk_id}">
+    <div class="passage-preview">${firstPara}</div>
+    <div class="passage-meta">
+      <span class="book">${escHtml(p.book_title)}</span>
+      <button onclick="remove('${esc(p.chunk_id)}', this)">Remove</button>
+    </div>
+  </div>`;
+}
+
+async function remove(chunkId, btn) {
+  await fetch('/api/saved/' + encodeURIComponent(chunkId), { method: 'DELETE' });
+  const card = btn.closest('.passage');
+  const prev = card.previousElementSibling;
+  const next = card.nextElementSibling;
+  if (prev && prev.classList.contains('separator')) prev.remove();
+  else if (next && next.classList.contains('separator')) next.remove();
+  card.remove();
+  const container = document.getElementById('favorites');
+  if (!container.querySelector('.passage')) {
+    container.innerHTML = '<div class="empty">No saved passages yet</div>';
+  }
+}
+
+function esc(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+loadFavorites();
+</script>
+{% endblock %}

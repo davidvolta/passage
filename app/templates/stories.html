@@ -1,155 +1,253 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stories - Osho Says</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 40px 20px; }
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-  h1 { font-size: 1.8rem; }
-  .nav { display: flex; gap: 16px; align-items: center; }
-  .nav a { color: #888; text-decoration: none; font-size: 0.95rem; }
-  .nav a:hover { color: #2a2a2a; }
-  .nav a.active { color: #2a2a2a; border-bottom: 2px solid #2a2a2a; padding-bottom: 2px; }
-  .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
-  .filter-box { margin-bottom: 24px; }
-  .filter-box input { width: 100%; padding: 10px 14px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
-  .filter-box input:focus { outline: none; border-color: #666; }
-  .story { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-  .story-text { font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; margin-bottom: 16px; }
-  .story-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
-  .story-meta .book { font-style: italic; }
-  .story-meta .score { font-size: 0.8rem; color: #aaa; }
-  .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
-  .loading { color: #888; text-align: center; padding: 40px 0; }
-  .separator { display: flex; justify-content: center; padding: 28px 0; }
-  .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
-  .end-dot { display: flex; justify-content: center; padding-top: 60px; padding-bottom: 40px; }
-  .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
-  .book-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+{% extends "base.html" %}
+
+{% block title %}Stories — Osho Says{% endblock %}
+
+{% block styles %}
+  .content { padding-top: 32px; }
+  .input-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; }
+  .input-wrapper input { width: 100%; padding: 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; background: #fff; transition: border-color 0.2s; }
+  .input-wrapper input:focus { outline: none; border-color: #666; }
+  .input-row button { padding: 10px 20px; font-size: 0.95rem; background: #2a2a2a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .input-row button:hover { background: #444; }
+  .controls { margin-bottom: 24px; }
+  .book-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .book-filter button { background: none; border: 1px solid #ccc; border-radius: 16px; padding: 6px 14px; font-size: 0.85rem; color: #666; cursor: pointer; font-family: inherit; }
   .book-filter button:hover { border-color: #888; color: #2a2a2a; }
   .book-filter button.active { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
+  .filter-box input { width: 100%; padding: 10px 14px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; background: #fff; transition: border-color 0.2s; }
+  .filter-box input:focus { outline: none; border-color: #666; }
   .count { color: #888; font-size: 0.9rem; margin-bottom: 16px; }
-</style>
-</head>
-<body>
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; }
+  .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; white-space: pre-wrap; }
+  .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
+  .passage-meta .book { font-style: italic; }
+  .passage-meta button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.85rem; color: #666; font-family: inherit; }
+  .passage-meta button:hover { border-color: #888; color: #2a2a2a; }
+  .passage-meta button.saved { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
+  .separator { display: flex; justify-content: center; padding: 28px 0; }
+  .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .end-dot { display: flex; justify-content: center; padding-top: 120px; padding-bottom: 80px; }
+  .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
+  .spinner { display: none; color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+{% endblock %}
 
-<div class="header">
-  <h1>Osho Says</h1>
-  <nav class="nav">
-    <a href="/">Search</a>
-    <a href="/stories" class="active">Stories</a>
-  </nav>
+{% block content %}
+<div class="content">
+  <div class="input-row">
+    <div class="input-wrapper">
+      <input type="text" id="query" placeholder="Search passages..." autofocus>
+    </div>
+    <button onclick="doSearch()">Search</button>
+  </div>
+
+  <div class="count" id="count"></div>
+  <div class="book-filter" id="bookFilter"></div>
+
+  <div class="controls">
+    <div class="filter-box">
+      <input type="text" id="filter" placeholder="Filter by keyword..." oninput="applyFilters()">
+    </div>
+  </div>
+
+  <div class="spinner" id="spinner">Searching...</div>
+  <div id="results"></div>
+  <div id="sentinel" style="height:1px"></div>
 </div>
+{% endblock %}
 
-<div class="subtitle">Parables, koans, and life lessons from the talks</div>
-
-<div class="count" id="count">Loading stories…</div>
-
-<div class="book-filter" id="bookFilter"></div>
-
-<div class="filter-box">
-  <input type="text" id="filter" placeholder="Filter stories by keyword..." oninput="filterStories()">
-</div>
-
-<div id="stories"></div>
-
+{% block scripts %}
 <script>
+const $ = id => document.getElementById(id);
 let allStories = [];
-let books = [];
+let searchResults = [];
+let searchActive = false;
 let currentBook = 'all';
+let savedIds = new Set();
+let renderedCount = 0;
+const PAGE_SIZE = 10;
 
-async function loadStories() {
-  const res = await fetch('/api/stories');
-  allStories = await res.json();
+// Load saved IDs for button state
+fetch('/api/saved').then(r => r.json()).then(data => {
+  data.forEach(p => savedIds.add(p.chunk_id));
+});
 
-  // Extract unique books
-  books = [...new Set(allStories.map(s => s.book))];
+// Load stories for browse mode
+fetch('/api/stories').then(r => r.json()).then(data => {
+  allStories = data;
+  // Check URL for ?q= param
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  if (q) {
+    $('query').value = q;
+    doSearch();
+  } else {
+    updateView();
+  }
+});
 
-  document.getElementById('count').textContent = `${allStories.length} stories found`;
+$('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
 
+async function doSearch() {
+  const q = $('query').value.trim();
+  if (!q) {
+    searchActive = false;
+    searchResults = [];
+    currentBook = 'all';
+    updateView();
+    return;
+  }
+  $('spinner').style.display = 'block';
+  $('results').innerHTML = '';
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&n=50`);
+    searchResults = await res.json();
+    searchActive = true;
+    currentBook = 'all';
+    $('spinner').style.display = 'none';
+    updateView();
+  } catch (err) {
+    $('spinner').style.display = 'none';
+    $('results').innerHTML = '<div class="empty">Search failed</div>';
+    console.error(err);
+  }
+}
+
+function updateView() {
   renderBookFilter();
-  renderStories();
+  applyFilters();
 }
 
 function renderBookFilter() {
-  const container = document.getElementById('bookFilter');
+  const dataset = searchActive ? searchResults : allStories;
   const bookCounts = {};
-  allStories.forEach(s => {
-    bookCounts[s.book] = (bookCounts[s.book] || 0) + 1;
+  dataset.forEach(p => {
+    const b = p.book_title || p.book;
+    bookCounts[b] = (bookCounts[b] || 0) + 1;
   });
 
-  const sortedBooks = books.sort((a, b) => bookCounts[b] - bookCounts[a]);
-
-  let html = `<button class="${currentBook === 'all' ? 'active' : ''}" onclick="setBook('all')">All (${allStories.length})</button>`;
-  for (const book of sortedBooks) {
-    const shortName = book.length > 30 ? book.slice(0, 27) + '…' : book;
-    html += `<button class="${currentBook === book ? 'active' : ''}" onclick="setBook('${book.replace(/'/g, "\\'")}')">${shortName} (${bookCounts[book]})</button>`;
+  const sorted = Object.keys(bookCounts).sort((a, b) => bookCounts[b] - bookCounts[a]);
+  let html = `<button class="${currentBook === 'all' ? 'active' : ''}" onclick="setBook('all')">All (${dataset.length})</button>`;
+  for (const book of sorted) {
+    const short = book.length > 30 ? book.slice(0, 27) + '...' : book;
+    html += `<button class="${currentBook === book ? 'active' : ''}" onclick="setBook('${book.replace(/'/g, "\\'")}')">${short} (${bookCounts[book]})</button>`;
   }
-  container.innerHTML = html;
+  $('bookFilter').innerHTML = html;
 }
 
 function setBook(book) {
   currentBook = book;
   renderBookFilter();
-  renderStories();
+  applyFilters();
 }
 
-function filterStories() {
-  renderStories();
-}
+function applyFilters() {
+  const dataset = searchActive ? searchResults : allStories;
+  const keyword = $('filter').value.toLowerCase();
 
-function renderStories() {
-  const filterText = document.getElementById('filter').value.toLowerCase();
-  const container = document.getElementById('stories');
-
-  let filtered = allStories;
+  let filtered = dataset;
 
   if (currentBook !== 'all') {
-    filtered = filtered.filter(s => s.book === currentBook);
+    filtered = filtered.filter(p => (p.book_title || p.book) === currentBook);
   }
 
-  if (filterText) {
-    filtered = filtered.filter(s =>
-      s.text.toLowerCase().includes(filterText) ||
-      s.book.toLowerCase().includes(filterText)
+  if (keyword) {
+    filtered = filtered.filter(p =>
+      p.text.toLowerCase().includes(keyword) ||
+      (p.book_title || p.book).toLowerCase().includes(keyword)
     );
   }
 
-  if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty">No stories match your filter</div>';
+  const label = searchActive ? 'results' : 'stories';
+  $('count').textContent = `${filtered.length} ${label}`;
+
+  renderedCount = 0;
+  $('results').innerHTML = '';
+  window._currentFiltered = filtered;
+  renderBatch();
+}
+
+function renderBatch() {
+  const filtered = window._currentFiltered;
+  if (!filtered) return;
+  const batch = filtered.slice(renderedCount, renderedCount + PAGE_SIZE);
+  if (!batch.length) {
+    if (renderedCount === 0) {
+      $('results').innerHTML = '<div class="empty">No matches</div>';
+    }
     return;
   }
 
-  let html = '';
-  filtered.forEach((story, i) => {
-    if (i > 0) html += '<div class="separator"></div>';
-    html += `
-      <div class="story">
-        <div class="story-text">${escapeHtml(story.text)}</div>
-        <div class="story-meta">
-          <span class="book">${escapeHtml(story.book)}</span>
-          <span class="score">score: ${story.score.toFixed(1)}</span>
-        </div>
-      </div>
-    `;
+  // Remove existing end-dot before appending
+  const existingEnd = $('results').querySelector('.end-dot');
+  if (existingEnd) existingEnd.remove();
+
+  const frag = document.createDocumentFragment();
+  batch.forEach((p, i) => {
+    if (renderedCount + i > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'separator';
+      frag.appendChild(sep);
+    }
+    const div = document.createElement('div');
+    div.innerHTML = passageCard(p);
+    frag.appendChild(div.firstElementChild);
   });
-  html += '<div class="end-dot"></div>';
+  $('results').appendChild(frag);
+  renderedCount += batch.length;
 
-  container.innerHTML = html;
+  if (renderedCount >= filtered.length) {
+    const end = document.createElement('div');
+    end.className = 'end-dot';
+    $('results').appendChild(end);
+  }
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+// Infinite scroll
+const observer = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) renderBatch();
+}, { rootMargin: '200px' });
+observer.observe($('sentinel'));
+
+function passageCard(p) {
+  const bookTitle = p.book_title || p.book;
+  const chunkId = p.chunk_id || null;
+  const firstPara = escHtml(p.text.split('\n\n')[0]);
+  const isSaved = chunkId && savedIds.has(chunkId);
+
+  let actionBtn = '';
+  if (chunkId) {
+    const btnClass = isSaved ? 'saved' : '';
+    const btnLabel = isSaved ? 'Saved' : 'Save';
+    actionBtn = `<button class="${btnClass}" onclick="toggleSave('${esc(chunkId)}', '${esc(bookTitle)}', this)" data-text="${p.text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${btnLabel}</button>`;
+  }
+
+  return `<div class="passage" data-id="${chunkId || ''}">
+    <div class="passage-preview">${firstPara}</div>
+    <div class="passage-meta">
+      <span class="book">${escHtml(bookTitle)}</span>
+      ${actionBtn}
+    </div>
+  </div>`;
 }
 
-loadStories();
+async function toggleSave(chunkId, bookTitle, btn) {
+  if (savedIds.has(chunkId)) return;
+  const text = btn.dataset.text;
+  await fetch('/api/saved', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chunk_id: chunkId, book_title: bookTitle, text })
+  });
+  savedIds.add(chunkId);
+  btn.textContent = 'Saved';
+  btn.classList.add('saved');
+}
+
+function esc(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 </script>
-
-</body>
-</html>
+{% endblock %}

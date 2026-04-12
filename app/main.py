@@ -40,6 +40,7 @@ def _load_saved() -> list[dict]:
 
 
 def _write_saved(saved: list[dict]) -> None:
+    config.SAVED_PASSAGES_FILE.parent.mkdir(parents=True, exist_ok=True)
     config.SAVED_PASSAGES_FILE.write_text(json.dumps(saved, indent=2))
 
 
@@ -53,17 +54,22 @@ async def api_words():
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse(request, "index.html")
+    return templates.TemplateResponse(request, "index.html", {"active_tab": "home"})
 
 
 @app.get("/channel", response_class=HTMLResponse)
 async def channel_page(request: Request):
-    return templates.TemplateResponse(request, "channel.html")
+    return templates.TemplateResponse(request, "channel.html", {"active_tab": "channel"})
 
 
 @app.get("/stories", response_class=HTMLResponse)
 async def stories_page(request: Request):
-    return templates.TemplateResponse(request, "stories.html")
+    return templates.TemplateResponse(request, "stories.html", {"active_tab": "stories"})
+
+
+@app.get("/favorites", response_class=HTMLResponse)
+async def favorites_page(request: Request):
+    return templates.TemplateResponse(request, "favorites.html", {"active_tab": "favorites"})
 
 
 def _parse_stories() -> list[dict]:

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Osho Says{% endblock %}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 0 20px; }
+  .tab-bar { display: flex; border-bottom: 1px solid #e8e6e3; padding-top: 20px; }
+  .tab { padding: 12px 20px; font-size: 0.95rem; color: #888; text-decoration: none; font-family: inherit; border-bottom: 2px solid transparent; transition: color 0.15s; }
+  .tab:hover { color: #2a2a2a; }
+  .tab.active { color: #2a2a2a; border-bottom-color: #2a2a2a; }
+  {% block styles %}{% endblock %}
+</style>
+</head>
+<body>
+
+<nav class="tab-bar">
+  <a href="/" class="tab {% if active_tab == 'home' %}active{% endif %}">Home</a>
+  <a href="/stories" class="tab {% if active_tab == 'stories' %}active{% endif %}">Stories</a>
+  <a href="/channel" class="tab {% if active_tab == 'channel' %}active{% endif %}">Channel</a>
+  <a href="/favorites" class="tab {% if active_tab == 'favorites' %}active{% endif %}">Favorites</a>
+</nav>
+
+{% block content %}{% endblock %}
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

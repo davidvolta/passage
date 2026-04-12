@@ -1,21 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Channel</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 40px 20px; display: flex; flex-direction: column; min-height: 100vh; }
-  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
-  .back { font-size: 0.9rem; color: #aaa; text-decoration: none; }
-  .back:hover { color: #666; }
-  h1 { font-size: 1.8rem; }
-  .mode-toggle { display: flex; gap: 4px; }
-  .mode-pill { background: none; border: 1px solid #ddd; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; color: #aaa; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .mode-pill:hover { border-color: #bbb; color: #666; }
-  .mode-pill.active { background: #2a2a2a; border-color: #2a2a2a; color: #fff; }
-  .messages { flex: 1; margin-bottom: 32px; }
+{% extends "base.html" %}
+
+{% block title %}Channel — Osho Says{% endblock %}
+
+{% block styles %}
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  .messages { flex: 1; margin-bottom: 32px; padding-top: 32px; }
   .msg { margin-bottom: 32px; }
   .msg.user .bubble { color: #888; font-size: 0.95rem; line-height: 1.7; }
   .msg.osho .bubble { font-size: 1rem; line-height: 1.8; }
@@ -43,24 +32,16 @@
   .input-row button:hover { background: #444; }
   .input-row button:disabled { background: #ccc; cursor: default; }
   .warming { position: fixed; bottom: 24px; right: 24px; font-size: 0.8rem; color: #bbb; font-family: Georgia, serif; }
-</style>
-</head>
-<body>
+{% endblock %}
 
-<div class="header">
-  <div style="display:flex;align-items:baseline;gap:16px">
-    <a class="back" href="/">← search</a>
-    <h1>Channel</h1>
-  </div>
-</div>
-
+{% block content %}
 <div class="messages" id="messages"></div>
-<div class="warming" id="warming">warming up…</div>
+<div class="warming" id="warming">warming up...</div>
 
 <div class="input-row">
   <div class="input-wrapper">
-    <textarea id="input" placeholder="Ask the channel anything…" rows="1"></textarea>
-    <div class="mode-dropdown" id="modeDropdown" onclick="toggleModeDropdown(event)" title="Change mode">▼</div>
+    <textarea id="input" placeholder="Ask the channel anything..." rows="1"></textarea>
+    <div class="mode-dropdown" id="modeDropdown" onclick="toggleModeDropdown(event)" title="Change mode">&#9660;</div>
     <div class="mode-dropdown-menu" id="modeDropdownMenu">
       <div class="mode-dropdown-item active" data-mode="casual" onclick="setMode('casual')">conversation</div>
       <div class="mode-dropdown-item" data-mode="teaching" onclick="setMode('teaching')">teaching</div>
@@ -69,7 +50,9 @@
   </div>
   <button id="sendBtn" onclick="send()">Ask</button>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 const $ = id => document.getElementById(id);
 let history = [];
@@ -106,9 +89,9 @@ function setMode(m) {
     item.classList.toggle('active', item.dataset.mode === m);
   });
   const placeholders = {
-    casual: 'Ask the channel anything…',
-    teaching: 'Ask a question for the book…',
-    story: 'Create a story from the channel…',
+    casual: 'Ask the channel anything...',
+    teaching: 'Ask a question for the book...',
+    story: 'Create a story from the channel...',
   };
   textarea.placeholder = placeholders[m];
   textarea.classList.toggle('teaching-mode', m !== 'casual');
@@ -213,5 +196,4 @@ async function saveResponse(text, btn) {
 
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 </script>
-</body>
-</html>
+{% endblock %}
