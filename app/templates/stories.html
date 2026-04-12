@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stories - Osho Says</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Georgia, serif; background: #faf9f7; color: #2a2a2a; max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  h1 { font-size: 1.8rem; }
+  .nav { display: flex; gap: 16px; align-items: center; }
+  .nav a { color: #888; text-decoration: none; font-size: 0.95rem; }
+  .nav a:hover { color: #2a2a2a; }
+  .nav a.active { color: #2a2a2a; border-bottom: 2px solid #2a2a2a; padding-bottom: 2px; }
+  .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
+  .filter-box { margin-bottom: 24px; }
+  .filter-box input { width: 100%; padding: 10px 14px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+  .filter-box input:focus { outline: none; border-color: #666; }
+  .story { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .story-text { font-size: 0.95rem; line-height: 1.7; white-space: pre-wrap; margin-bottom: 16px; }
+  .story-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
+  .story-meta .book { font-style: italic; }
+  .story-meta .score { font-size: 0.8rem; color: #aaa; }
+  .empty { color: #aaa; text-align: center; padding: 60px 0; font-size: 0.95rem; }
+  .loading { color: #888; text-align: center; padding: 40px 0; }
+  .separator { display: flex; justify-content: center; padding: 28px 0; }
+  .separator::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .end-dot { display: flex; justify-content: center; padding-top: 60px; padding-bottom: 40px; }
+  .end-dot::after { content: ''; width: 6px; height: 6px; background: #ccc; border-radius: 50%; display: block; }
+  .book-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .book-filter button { background: none; border: 1px solid #ccc; border-radius: 16px; padding: 6px 14px; font-size: 0.85rem; color: #666; cursor: pointer; font-family: inherit; }
+  .book-filter button:hover { border-color: #888; color: #2a2a2a; }
+  .book-filter button.active { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
+  .count { color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Osho Says</h1>
+  <nav class="nav">
+    <a href="/">Search</a>
+    <a href="/stories" class="active">Stories</a>
+  </nav>
+</div>
+
+<div class="subtitle">Parables, koans, and life lessons from the talks</div>
+
+<div class="count" id="count">Loading stories…</div>
+
+<div class="book-filter" id="bookFilter"></div>
+
+<div class="filter-box">
+  <input type="text" id="filter" placeholder="Filter stories by keyword..." oninput="filterStories()">
+</div>
+
+<div id="stories"></div>
+
+<script>
+let allStories = [];
+let books = [];
+let currentBook = 'all';
+
+async function loadStories() {
+  const res = await fetch('/api/stories');
+  allStories = await res.json();
+
+  // Extract unique books
+  books = [...new Set(allStories.map(s => s.book))];
+
+  document.getElementById('count').textContent = `${allStories.length} stories found`;
+
+  renderBookFilter();
+  renderStories();
+}
+
+function renderBookFilter() {
+  const container = document.getElementById('bookFilter');
+  const bookCounts = {};
+  allStories.forEach(s => {
+    bookCounts[s.book] = (bookCounts[s.book] || 0) + 1;
+  });
+
+  const sortedBooks = books.sort((a, b) => bookCounts[b] - bookCounts[a]);
+
+  let html = `<button class="${currentBook === 'all' ? 'active' : ''}" onclick="setBook('all')">All (${allStories.length})</button>`;
+  for (const book of sortedBooks) {
+    const shortName = book.length > 30 ? book.slice(0, 27) + '…' : book;
+    html += `<button class="${currentBook === book ? 'active' : ''}" onclick="setBook('${book.replace(/'/g, "\\'")}')">${shortName} (${bookCounts[book]})</button>`;
+  }
+  container.innerHTML = html;
+}
+
+function setBook(book) {
+  currentBook = book;
+  renderBookFilter();
+  renderStories();
+}
+
+function filterStories() {
+  renderStories();
+}
+
+function renderStories() {
+  const filterText = document.getElementById('filter').value.toLowerCase();
+  const container = document.getElementById('stories');
+
+  let filtered = allStories;
+
+  if (currentBook !== 'all') {
+    filtered = filtered.filter(s => s.book === currentBook);
+  }
+
+  if (filterText) {
+    filtered = filtered.filter(s =>
+      s.text.toLowerCase().includes(filterText) ||
+      s.book.toLowerCase().includes(filterText)
+    );
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty">No stories match your filter</div>';
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((story, i) => {
+    if (i > 0) html += '<div class="separator"></div>';
+    html += `
+      <div class="story">
+        <div class="story-text">${escapeHtml(story.text)}</div>
+        <div class="story-meta">
+          <span class="book">${escapeHtml(story.book)}</span>
+          <span class="score">score: ${story.score.toFixed(1)}</span>
+        </div>
+      </div>
+    `;
+  });
+  html += '<div class="end-dot"></div>';
+
+  container.innerHTML = html;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+loadStories();
+</script>
+
+</body>
+</html>
