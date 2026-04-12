@@ -9,10 +9,6 @@
   .msg.user .bubble { color: #888; font-size: 0.95rem; line-height: 1.7; }
   .msg.osho .bubble { font-size: 1rem; line-height: 1.8; white-space: pre-wrap; }
   .msg.osho.teaching .bubble { font-size: 1.05rem; line-height: 1.9; white-space: pre-wrap; }
-  .msg.osho .meta { display: flex; justify-content: flex-end; margin-top: 10px; }
-  .save-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: #bbb; font-family: inherit; padding: 0 4px; }
-  .save-btn:hover { color: #888; }
-  .save-btn.saved-state { color: #b04040; }
   .cursor { display: inline-block; width: 2px; height: 1em; background: #2a2a2a; margin-left: 2px; vertical-align: middle; animation: blink 1s step-end infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   .input-row { display: flex; gap: 8px; position: sticky; bottom: 20px; background: #faf9f7; padding-top: 12px; }
@@ -139,13 +135,6 @@ async function send() {
   cursor.remove();
   history.push({ role: 'assistant', content: fullText });
 
-  const meta = oshoMsg.querySelector('.meta');
-  const btn = document.createElement('button');
-  btn.className = 'save-btn';
-  btn.textContent = '\u2661';
-  btn.onclick = () => saveResponse(fullText, btn);
-  meta.appendChild(btn);
-
   $('sendBtn').disabled = false;
   streaming = false;
 }
@@ -154,22 +143,11 @@ function appendMessage(role, text, msgMode) {
   const div = document.createElement('div');
   div.className = `msg ${role}${msgMode === 'teaching' ? ' teaching' : ''} `;
   div.innerHTML = role === 'osho'
-    ? `<div class="bubble"></div><div class="meta"></div>`
+    ? `<div class="bubble"></div>`
     : `<div class="bubble">${escHtml(text)}</div>`;
   $('messages').appendChild(div);
   window.scrollTo(0, document.body.scrollHeight);
   return div;
-}
-
-async function saveResponse(text, btn) {
-  const chunkId = 'channel_' + Date.now();
-  await fetch('/api/saved', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chunk_id: chunkId, book_title: 'the channel', text }),
-  });
-  btn.textContent = '\u2665';
-  btn.classList.add('saved-state');
 }
 
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
