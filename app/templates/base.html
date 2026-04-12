@@ -12,6 +12,16 @@
   .tab-fav { margin-left: auto; font-size: 1.2rem; padding: 10px 20px; -webkit-text-stroke: 1px currentColor; }
   .tab:hover { color: #2a2a2a; }
   .tab.active { color: #2a2a2a; border-bottom-color: #2a2a2a; }
+
+  /* Lightbox */
+  #lb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; overflow-y: auto; padding: 40px 20px; }
+  #lb-card { background: #fff; border-radius: 8px; padding: 32px; max-width: 680px; margin: 0 auto; }
+  #lb-text { font-size: 1rem; line-height: 1.85; margin-bottom: 20px; }
+  #lb-text p { margin-bottom: 1.2em; }
+  #lb-text p:last-child { margin-bottom: 0; }
+  #lb-text p.lb-highlight { background: #fffde7; border-radius: 3px; padding: 2px 4px; margin-left: -4px; }
+  #lb-meta { font-size: 0.85rem; color: #888; font-style: italic; }
+
   {% block styles %}{% endblock %}
 </style>
 </head>
@@ -24,9 +34,45 @@
   <a href="/favorites" class="tab tab-fav {% if active_tab == 'favorites' %}active{% endif %}" aria-label="Favorites">&#9825;</a>
 </nav>
 
+<div id="lb-overlay" onclick="closeLightbox()">
+  <div id="lb-card" onclick="event.stopPropagation()">
+    <div id="lb-text"></div>
+    <div id="lb-meta"><span id="lb-book"></span></div>
+  </div>
+</div>
+
 {% block content %}{% endblock %}
 
 {% block scripts %}{% endblock %}
+
+<script>
+function _lbEsc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function openLightbox(chunkId) {
+  if (!window._lightboxGetPassage) return;
+  const p = window._lightboxGetPassage(chunkId);
+  if (!p) return;
+
+  // Get the preview paragraph stored on the card
+  const card = document.querySelector(`.passage[data-id="${chunkId}"]`);
+  const preview = card ? card.dataset.preview : '';
+
+  // Render paragraphs, highlighting the one that was shown in the card
+  const paras = p.text.replace(/^#+\s*/gm, '').split('\n\n').map(s => s.trim()).filter(s => s);
+  document.getElementById('lb-text').innerHTML = paras.map(para =>
+    `<p class="${preview && para === preview ? 'lb-highlight' : ''}">${_lbEsc(para)}</p>`
+  ).join('');
+
+  document.getElementById('lb-book').textContent = p.bookTitle;
+  document.getElementById('lb-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lb-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
 
 </body>
 </html>

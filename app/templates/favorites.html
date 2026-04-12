@@ -2,7 +2,8 @@
 
 {% block styles %}
   .content { padding-top: 32px; }
-  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; transition: opacity 0.4s ease; }
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; transition: opacity 0.4s ease; cursor: pointer; }
+  .passage:hover { border-color: #ccc; }
   .passage.removing { opacity: 0.2; }
   .passage.removing .heart-btn { pointer-events: auto; cursor: pointer; }
   .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; }
@@ -44,13 +45,20 @@ async function loadFavorites() {
   ).join('') + '<div class="end-dot"></div>';
 }
 
+window._lightboxGetPassage = id => {
+  const p = passagesMap[id];
+  return p ? { text: p.text, bookTitle: p.book_title } : null;
+};
+
 function passageCard(p) {
-  const firstPara = escHtml(p.text.split('\n\n')[0]);
-  return `<div class="passage" data-id="${p.chunk_id}">
+  const rawFirst = p.text.split('\n\n')[0].trim();
+  const firstPara = escHtml(rawFirst);
+  const previewAttr = rawFirst.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return `<div class="passage" data-id="${p.chunk_id}" data-preview="${previewAttr}" onclick="openLightbox('${esc(p.chunk_id)}')">
     <div class="passage-preview">${firstPara}</div>
     <div class="passage-meta">
       <span class="book">${escHtml(p.book_title)}</span>
-      <button class="heart-btn" onclick="toggleSave('${esc(p.chunk_id)}', this)" title="Remove">&#9829;</button>
+      <button class="heart-btn" onclick="event.stopPropagation();toggleSave('${esc(p.chunk_id)}', this)" title="Remove">&#9829;</button>
     </div>
   </div>`;
 }

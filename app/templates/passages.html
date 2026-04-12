@@ -34,7 +34,8 @@
   .books-btn:hover { border-color: #888; color: #2a2a2a; }
   .books-btn.has-filter { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
   .count { color: #888; font-size: 0.9rem; }
-  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; }
+  .passage { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; cursor: pointer; }
+  .passage:hover { border-color: #ccc; }
   .passage-preview { font-size: 0.95rem; line-height: 1.7; margin-bottom: 12px; white-space: pre-wrap; }
   .passage-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #888; }
   .passage-meta .book { font-style: italic; }
@@ -98,6 +99,12 @@ let currentBook = 'all';
 let savedIds = new Set();
 let renderedCount = 0;
 const PAGE_SIZE = 10;
+const passagesById = {};
+
+window._lightboxGetPassage = id => {
+  const p = passagesById[id];
+  return p ? { text: p.text, bookTitle: p.book_title || p.book } : null;
+};
 
 // Load saved IDs for button state
 fetch('/api/saved').then(r => r.json()).then(data => {
@@ -145,13 +152,18 @@ async function doSearch() {
 
   try {
     const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&n=500`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Server error: ${res.status} - ${text.slice(0, 100)}`);
+    }
     currentResults = await res.json();
+    currentResults.forEach(p => { if (p.chunk_id) passagesById[p.chunk_id] = p; });
     $('spinner').style.display = 'none';
     renderBookList();
     renderResults('passages');
   } catch (err) {
     $('spinner').style.display = 'none';
-    $('results').innerHTML = '<div class="empty">Search failed</div>';
+    $('results').innerHTML = '<div class="empty">Search failed. Try again.</div>';
     console.error(err);
   }
 }
@@ -253,10 +265,11 @@ function passageCard(p) {
   if (chunkId) {
     const btnClass = isSaved ? 'saved' : '';
     const btnLabel = isSaved ? '\u2665' : '\u2661';
-    actionBtn = `<button class="save-btn ${btnClass}" onclick="toggleSave('${esc(chunkId)}', '${esc(bookTitle)}', this)" data-text="${p.text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${btnLabel}</button>`;
+    actionBtn = `<button class="save-btn ${btnClass}" onclick="event.stopPropagation(); toggleSave('${esc(chunkId)}', '${esc(bookTitle)}', this)" data-text="${p.text.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${btnLabel}</button>`;
   }
 
-  return `<div class="passage" data-id="${chunkId || ''}">
+  const previewAttr = bestPara.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return `<div class="passage" data-id="${chunkId || ''}" data-preview="${previewAttr}" onclick="openLightbox('${esc(chunkId || '')}')">
     <div class="passage-preview">${firstPara}</div>
     <div class="passage-meta">
       <span class="book">${escHtml(bookTitle)}</span>
