@@ -13,28 +13,38 @@
 - Motion is functional only — no entrance animations, no hover lifts.
 - Typography does the heavy lifting. One serif family throughout.
 - Warmth comes from the off-white background and warm gray borders, not from color accents.
+- Color is used only for semantic mode indicators — nowhere else in the interface.
 
-**Anti-patterns:** gradients, drop shadows on cards, colorful accents, rounded hero images, icon libraries, loading skeletons, modal overlays.
+**Anti-patterns:** gradients, drop shadows on cards, colorful accents outside mode pills, rounded hero images, icon libraries, loading skeletons, modal overlays, book filter chips.
 
 ---
 
 ## Color Tokens
 
+### Base palette
+
 | Token | Hex | Usage |
 |---|---|---|
 | `--color-bg` | `#faf9f7` | Page background — warm off-white, slightly cream |
-| `--color-surface` | `#ffffff` | Cards, inputs, dropdowns |
-| `--color-border` | `#e8e6e3` | Card borders — warm light gray |
-| `--color-border-input` | `#cccccc` | Input default border |
+| `--color-surface` | `#ffffff` | Cards, inputs |
+| `--color-border` | `#e8e6e3` | Card borders, sidebar border — warm light gray |
+| `--color-border-input` | `#cccccc` | Input default border, meta button border |
 | `--color-border-focus` | `#666666` | Input focused border |
-| `--color-border-muted` | `#dddddd` | Pill and toggle default border |
 | `--color-ink` | `#2a2a2a` | Primary text, headings, active/filled buttons |
 | `--color-ink-muted` | `#666666` | Secondary text, hover states |
-| `--color-ink-subtle` | `#888888` | Meta text, user messages in channel |
-| `--color-ink-faint` | `#aaaaaa` | Nav links, empty states, disabled hints |
-| `--color-ink-ghost` | `#bbbbbb` | Ghost save button, mode dropdown trigger |
+| `--color-ink-subtle` | `#888888` | Meta text, user messages in channel, sidebar labels |
+| `--color-ink-faint` | `#aaaaaa` | Empty states, disabled hints |
+| `--color-ink-ghost` | `#bbbbbb` | Ghost save button, warming indicator, book counts |
 | `--color-separator` | `#cccccc` | Dot separators between passages |
-| `--color-hover-surface` | `#f5f5f5` | Dropdown item hover background |
+| `--color-hover-surface` | `#f5f5f5` | Sidebar item hover |
+
+### Mode pill colors (the only accent colors in the interface)
+
+| Token | Hex | Mode |
+|---|---|---|
+| `--color-mode-purple` | `#7c5cbf` | casual / semantic |
+| `--color-mode-red` | `#b04040` | teaching / exact |
+| `--color-mode-blue` | `#3a6eaa` | story |
 
 ---
 
@@ -44,15 +54,14 @@
 
 | Token | Size | Line height | Usage |
 |---|---|---|---|
-| `--text-heading` | `1.8rem` | default | Page `h1` title |
-| `--text-body-lg` | `1.05rem` | `1.9` | Osho response in teaching mode |
-| `--text-body` | `1rem` | `1.8` | Osho response default |
-| `--text-body-sm` | `0.95rem` | `1.7` | Passage previews, inputs, buttons, nav links |
-| `--text-meta` | `0.85rem` | default | Book titles, inline action buttons, dropdown items |
-| `--text-tag` | `0.8rem` | default | Mode tag label, ghost save button, warming indicator |
-| `--text-xs` | `0.75rem` | default | Mode pill labels |
+| `--text-body-lg` | `1.05rem` | `1.9` | Channel response in teaching mode |
+| `--text-body` | `1rem` | `1.8` | Channel response default |
+| `--text-body-sm` | `0.95rem` | `1.7` | Passage previews, inputs, buttons, tab links |
+| `--text-meta` | `0.85rem` | default | Book titles, inline action buttons, sidebar items |
+| `--text-tag` | `0.8rem` | default | Ghost save button, warming indicator, mode tag label |
+| `--text-xs` | `0.75rem` | default | Mode pill label, book count in sidebar |
 
-All interactive elements use `font-family: inherit` to stay in Georgia.
+All interactive elements use `font-family: inherit`.
 
 ---
 
@@ -60,24 +69,22 @@ All interactive elements use `font-family: inherit` to stay in Georgia.
 
 | Token | Value | Usage |
 |---|---|---|
-| `--space-1` | `4px` | Gap between mode pills |
-| `--space-2` | `8px` | Input row gap, nav margin |
-| `--space-3` | `10px` | Message bottom margin baseline |
+| `--space-2` | `8px` | Input row gap, pill inset from edge |
+| `--space-3` | `10px` | Mode pill horizontal padding |
 | `--space-4` | `12px` | Between passage preview and meta row; sticky input top padding |
-| `--space-5` | `14px` | Pill horizontal padding |
-| `--space-6` | `16px` | Nav link gap |
+| `--space-6` | `16px` | Sidebar item vertical gap, sidebar header margin-bottom |
 | `--space-card` | `20px` | Card internal padding |
-| `--space-section` | `24px` | Header margin-bottom, filter margin |
-| `--space-input-x` | `14px` | Input horizontal padding |
-| `--space-input-y` | `10px` | Input vertical padding |
-| `--space-page-bottom` | `32px` | Messages bottom margin (channel) |
-| `--space-channel-header` | `40px` | Channel header margin-bottom |
-| `--space-input-gap` | `48px` | Input row to results gap (search page) |
+| `--space-section` | `24px` | Toolbar margin-bottom, search bar margin-bottom |
+| `--space-input-x` | `14px` | Input/textarea left padding |
+| `--space-input-right` | `95px` | Input/textarea right padding — reserves room for mode pill |
+| `--space-input-y` | `10px` | Input/textarea vertical padding |
+| `--space-page-bottom` | `32px` | Content top padding, messages bottom margin |
+| `--space-sidebar` | `200px` | Sidebar open width (desktop) |
+| `--space-sidebar-mobile` | `240px` | Sidebar open width (mobile overlay) |
 | `--space-separator` | `28px` | Vertical padding around dot separators |
-| `--space-end-top` | `120px` | End-dot top padding (search) |
-| `--space-end-bottom` | `80px` | End-dot bottom padding (search) |
+| `--space-end-top` | `120px` | End-dot top padding |
+| `--space-end-bottom` | `80px` | End-dot bottom padding |
 | `--space-page-x` | `20px` | Page horizontal padding |
-| `--space-page-y` | `40px` | Page vertical padding |
 
 ---
 
@@ -85,11 +92,10 @@ All interactive elements use `font-family: inherit` to stay in Georgia.
 
 | Token | Value | Usage |
 |---|---|---|
-| `--radius-card` | `8px` | Passage cards, story cards |
-| `--radius-input` | `6px` | Text inputs, textareas, primary buttons, dropdown menu |
-| `--radius-btn-meta` | `4px` | Save/Remove inline meta buttons |
-| `--radius-pill` | `20px` | Mode pills |
-| `--radius-chip` | `16px` | Book filter chips |
+| `--radius-card` | `8px` | Passage cards |
+| `--radius-input` | `6px` | Text inputs, textareas, primary buttons |
+| `--radius-btn-meta` | `4px` | Save/Remove inline meta buttons, Books toolbar button |
+| `--radius-pill` | `20px` | Mode pills (inset in inputs) |
 | `--radius-dot` | `50%` | Dot separators |
 
 ---
@@ -97,50 +103,74 @@ All interactive elements use `font-family: inherit` to stay in Georgia.
 ## Layout
 
 - **Max content width:** `720px`, centered with `margin: 0 auto`
-- **Page padding:** `40px 20px`
-- **Grid:** single column only — no multi-column layouts
-- **Sticky:** channel input row sticks to `bottom: 20px`; background matches `--color-bg` with `padding-top: 12px` to prevent content bleed
-- **Body model:** `min-height: 100vh; display: flex; flex-direction: column` on channel page so input row pushes to bottom
+- **Page padding:** `0 20px` (tab bar sits flush top, content starts below it)
+- **Tab bar:** fixed to top of every page, `border-bottom: 1px solid --color-border`
+- **Stories layout:** `display: flex` — sidebar (collapsible) + main column
+- **Channel layout:** `min-height: 100vh; display: flex; flex-direction: column` — input row sticks to `bottom: 20px`
+- **Mobile breakpoint:** `600px` — sidebar switches from push-layout to fixed overlay
 
 ---
 
 ## Components
 
-### Card — Passage / Story
+### Tab Bar
 
-A contained reading unit. No hover effect. No shadow.
+Persistent top navigation on every page. No logo or title — tabs speak for themselves.
 
 ```
-background:    --color-surface
-border:        1px solid --color-border
-border-radius: --radius-card
-padding:       --space-card
-margin-bottom: 20px (stories); none (search, uses separator)
+display:       flex
+border-bottom: 1px solid --color-border
+padding-top:   20px
 ```
 
-**Preview text**
-- Font: `--text-body-sm`, line-height `1.7`
-- `white-space: pre-wrap` for story cards
+**Tab link:**
+```
+padding:      12px 20px
+font-size:    --text-body-sm
+color:        --color-ink-subtle
+text-decoration: none
+font-family:  inherit
+border-bottom: 2px solid transparent
+transition:   color 0.15s
+```
 
-**Meta row** (`display: flex; justify-content: space-between; align-items: center`)
-- Left: book title — `font-style: italic`, `--text-meta`, `--color-ink-subtle`
-- Right: action button (Save / Remove) or score label
+| State | Change |
+|---|---|
+| hover | `color: --color-ink` |
+| active page | `color: --color-ink; border-bottom-color: --color-ink` |
+
+Pages: `Home`, `Stories`, `Channel`, `Favorites`
 
 ---
 
-### Button — Primary
+### Input Bar (shared — Stories search + Channel chat)
 
-Used for Search (index) and Ask (channel).
+Both pages use the same input visual. Stories uses `<input>`, Channel uses `<textarea>` (auto-grow, capped at 160px). The mode pill is inset inside both.
 
 ```
+width:         100%
+padding:       10px 95px 10px 14px   ← right padding reserves room for mode pill
+font-size:     --text-body-sm
+border:        1px solid --color-border-input
+border-radius: --radius-input
+font-family:   inherit
+background:    --color-surface
+transition:    border-color 0.2s
+```
+
+| State | Change |
+|---|---|
+| focus | `outline: none; border-color: --color-border-focus` |
+
+**Action button** (Search / Ask) sits outside the wrapper:
+```
+padding:       10px 20px
+font-size:     --text-body-sm
 background:    --color-ink
 color:         #ffffff
 border:        none
 border-radius: --radius-input
-padding:       10px 20px
-font-size:     --text-body-sm
 font-family:   inherit
-cursor:        pointer
 white-space:   nowrap
 ```
 
@@ -151,9 +181,66 @@ white-space:   nowrap
 
 ---
 
-### Button — Meta (inline card action)
+### Mode Pill (inset in Input Bar)
 
-Save, Remove, Saved — sits in the card meta row.
+A colored pill absolutely positioned at the right edge of the input. Clicking it cycles through modes. This is the **only** use of color in the UI.
+
+```
+position:      absolute
+right:         8px
+top:           50%
+transform:     translateY(-50%)
+padding:       3px 10px
+border-radius: --radius-pill
+font-size:     --text-xs
+font-family:   inherit
+cursor:        pointer
+user-select:   none
+background:    transparent
+border:        1px solid currentColor
+white-space:   nowrap
+transition:    opacity 0.15s
+```
+
+hover: `opacity: 0.7`
+
+**Modes and colors:**
+
+| Mode | Context | Color token | Hex |
+|---|---|---|---|
+| `semantic` | Stories | `--color-mode-purple` | `#7c5cbf` |
+| `exact` | Stories | `--color-mode-red` | `#b04040` |
+| `casual` | Channel | `--color-mode-purple` | `#7c5cbf` |
+| `teaching` | Channel | `--color-mode-red` | `#b04040` |
+| `story` | Channel | `--color-mode-blue` | `#3a6eaa` |
+
+Stories cycles: `semantic → exact → semantic`
+Channel cycles: `casual → teaching → story → casual`
+
+---
+
+### Card — Passage
+
+A contained reading unit. No hover effect. No shadow.
+
+```
+background:    --color-surface
+border:        1px solid --color-border
+border-radius: --radius-card
+padding:       --space-card
+```
+
+**Preview text:** `--text-body-sm`, `line-height: 1.7`, `white-space: pre-wrap`
+
+**Meta row** (`display: flex; justify-content: space-between; align-items: center; font-size: --text-meta; color: --color-ink-subtle`)
+- Left: book title — `font-style: italic`
+- Right: Save / Saved / Remove button
+
+---
+
+### Button — Meta (card action)
+
+Save, Saved, Remove — sits in card meta row.
 
 ```
 background:    none
@@ -175,16 +262,16 @@ cursor:        pointer
 
 ### Button — Ghost Save (channel)
 
-Appears in message meta row after a response streams in.
+Appears in message meta row after streaming completes.
 
 ```
-background:    none
-border:        none
-font-size:     --text-tag
-color:         --color-ink-ghost
-font-family:   inherit
-padding:       0
-cursor:        pointer
+background:  none
+border:      none
+font-size:   --text-tag
+color:       --color-ink-ghost
+font-family: inherit
+padding:     0
+cursor:      pointer
 ```
 
 | State | Change |
@@ -194,134 +281,80 @@ cursor:        pointer
 
 ---
 
-### Input — Text
+### Sidebar — Book List (Stories page)
 
-Search query input on index page, keyword filter on stories page.
+Collapsible panel on the left of the Stories page. On mobile it becomes a fixed overlay.
 
+**Collapsed:** `width: 0; overflow: hidden`
+**Open:** `width: 200px; padding-right: 20px; border-right: 1px solid --color-border`
+Transition: `width 0.2s, padding 0.2s`
+
+**Header row:**
 ```
-width:         100%
-padding:       10px 14px
-font-size:     --text-body-sm
-border:        1px solid --color-border-input
-border-radius: --radius-input
-font-family:   inherit
-background:    --color-surface
-transition:    border-color 0.2s
+display:         flex
+justify-content: space-between
+align-items:     center
+margin-bottom:   16px
 ```
+- Left label: `font-size: --text-meta; color: --color-ink-subtle` — "Books"
+- Right close button: `font-size: --text-meta; color: --color-ink-ghost`, hover `--color-ink-muted`
 
-| State | Change |
-|---|---|
-| focus | `outline: none; border-color: --color-border-focus` |
-
----
-
-### Textarea — Channel Input
-
-Auto-grows with content; capped at 160px.
-
+**Book list item:**
 ```
-width:         100%
-padding:       10px 36px 10px 14px   /* right: room for mode trigger */
-font-size:     --text-body-sm
-border:        1px solid --color-border-input
-border-radius: --radius-input
-font-family:   inherit
-resize:        none
-height:        48px
-line-height:   1.5
-overflow:      hidden
-background:    --color-surface
-transition:    border-color 0.2s
-```
-
-| State | Change |
-|---|---|
-| focus | `outline: none; border-color: --color-border-focus` |
-| teaching / story mode active | `border-color: --color-ink` |
-
----
-
-### Mode Pill
-
-Header-level toggle (channel page).
-
-```
-background:    none
-border:        1px solid --color-border-muted
-border-radius: --radius-pill
-padding:       4px 14px
-font-size:     --text-xs
-color:         --color-ink-faint
-cursor:        pointer
-font-family:   inherit
-transition:    all 0.15s
-```
-
-| State | Change |
-|---|---|
-| hover | `border-color: --color-ink-ghost; color: --color-ink-muted` |
-| active | `background: --color-ink; border-color: --color-ink; color: #fff` |
-
----
-
-### Book Filter Chip
-
-Pill-style filter on stories page. Same visual logic as Mode Pill but slightly larger.
-
-```
-background:    none
-border:        1px solid --color-border-input
-border-radius: --radius-chip
-padding:       6px 14px
-font-size:     --text-meta
-color:         --color-ink-muted
-cursor:        pointer
-font-family:   inherit
-```
-
-| State | Change |
-|---|---|
-| hover | `border-color: --color-ink-muted; color: --color-ink` |
-| active | `background: --color-ink; color: #fff; border-color: --color-ink` |
-
----
-
-### Nav Link
-
-Top navigation links (Stories, Search).
-
-```
-color:           --color-ink-subtle
-text-decoration: none
-font-size:       --text-body-sm
+padding:         6px 0
+font-size:       --text-meta
+color:           --color-ink-muted
+cursor:          pointer
+white-space:     nowrap
+overflow:        hidden
+text-overflow:   ellipsis
+transition:      color 0.15s
 ```
 
 | State | Change |
 |---|---|
 | hover | `color: --color-ink` |
-| active page | `color: --color-ink; border-bottom: 2px solid --color-ink; padding-bottom: 2px` |
+| active | `color: --color-ink; font-weight: 500` |
+
+Book count badge: `font-size: --text-xs; color: --color-ink-ghost; margin-left: 4px`
+
+**Mobile (≤600px):** sidebar is `position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; width: 240px`. A translucent overlay (`rgba(0,0,0,0.15)`) fills the rest of the screen and dismisses the sidebar on tap.
 
 ---
 
-### Back / Muted Nav Link
+### Toolbar (Stories page)
 
-Used on channel page: `← search`.
+Sits between the input bar and results. Contains the Books button and result count.
 
 ```
-font-size:       --text-body-sm
-color:           --color-ink-faint
-text-decoration: none
+display:       flex
+align-items:   center
+gap:           12px
+margin-bottom: 16px
+```
+
+**Books button:**
+```
+background:    none
+border:        1px solid --color-border-input
+border-radius: --radius-btn-meta
+padding:       4px 12px
+font-size:     --text-meta
+color:         --color-ink-muted
+font-family:   inherit
+cursor:        pointer
 ```
 
 | State | Change |
 |---|---|
-| hover | `color: --color-ink-muted` |
+| hover | `border-color: --color-ink-muted; color: --color-ink` |
+| book filter active | `background: --color-ink; color: #fff; border-color: --color-ink; text reflects selected book` |
 
 ---
 
 ### Separator — Dot
 
-A single 6px dot between passage cards. No text, no line.
+A single 6px dot between passage cards.
 
 ```
 display:         flex
@@ -329,73 +362,13 @@ justify-content: center
 padding:         28px 0
 ```
 
-`::after` pseudo-element:
-```
-content:       ''
-width:         6px
-height:        6px
-background:    --color-separator
-border-radius: 50%
-display:       block
-```
+`::after`: `width: 6px; height: 6px; background: --color-separator; border-radius: 50%`
 
 ---
 
-### Mode Dropdown (channel)
+### Blinking Cursor (streaming)
 
-A small `▼` trigger inside the textarea; opens a mini-menu above it.
-
-**Trigger:**
-```
-position:    absolute
-right:       10px
-top:         50%
-transform:   translateY(-50%)
-cursor:      pointer
-padding:     4px
-color:       --color-ink-ghost
-font-size:   0.6rem
-user-select: none
-transition:  color 0.2s
-```
-
-hover: `color: --color-ink-muted`
-
-**Menu:**
-```
-position:      absolute
-bottom:        calc(100% + 4px)
-right:         0
-background:    --color-surface
-border:        1px solid --color-border-muted
-border-radius: --radius-input
-box-shadow:    0 2px 8px rgba(0,0,0,0.10)
-min-width:     120px
-z-index:       10
-display:       none   /* toggled to block via .open class */
-```
-
-**Menu item:**
-```
-padding:     8px 14px
-font-size:   --text-meta
-color:       --color-ink-muted
-cursor:      pointer
-white-space: nowrap
-```
-
-| State | Change |
-|---|---|
-| hover | `background: --color-hover-surface; color: --color-ink` |
-| active mode | `color: --color-ink; font-weight: 500` |
-
-Modes: `conversation`, `teaching`, `story`
-
----
-
-### Blinking Cursor (streaming text)
-
-Shown inline while a response is streaming.
+Shown inline while channel response is streaming.
 
 ```
 display:        inline-block
@@ -413,30 +386,9 @@ animation:      blink 1s step-end infinite
 
 ---
 
-### Star Button (saved toggle)
+### Warming Indicator
 
-Icon-only button in the header. Toggles saved-passages view.
-
-```
-background:  none
-border:      none
-cursor:      pointer
-padding:     0
-line-height: 1
-```
-
-SVG: `22×22px; stroke: --color-ink; stroke-width: 1.5; stroke-linejoin: round`
-
-| State | SVG fill |
-|---|---|
-| no saved passages | `none` |
-| has saved passages | `--color-ink` |
-
----
-
-### Warming / Status Indicator
-
-Fixed bottom-right label that disappears once the API warms up.
+Fixed bottom-right status label; disappears once API is ready.
 
 ```
 position:    fixed
@@ -451,75 +403,94 @@ font-family: Georgia, serif
 
 ## Motion
 
-| Property | Value | Where |
+| Element | Property | Value |
 |---|---|---|
-| `border-color` transition | `0.2s ease` | All inputs on focus |
-| All properties transition | `0.15s ease` | Mode pills |
-| Word particle animation | JS-driven | Index page home canvas |
-| Blinking cursor | `1s step-end infinite` | Channel streaming response |
+| Inputs | `border-color` | `0.2s ease` on focus |
+| Mode pill | `opacity` | `0.15s` on hover |
+| Sidebar | `width`, `padding` | `0.2s` open/close |
+| Word particles | position, opacity, scale | JS-driven (rAF loop) |
+| Streaming cursor | opacity | `1s step-end infinite` |
 
-**Principle:** Motion is functional. No page-load entrance animations. No hover lifts or scale transforms on cards. No color flashes.
+**Principle:** No entrance animations. No hover lifts. No color flashes. Motion communicates state changes only.
 
 ---
 
 ## Page Layouts
 
-### Search (index.html)
+### Home (`/`)
 
 ```
 ┌────────────────────────────────────────┐
-│ h1: Osho Says         stories  channel ★│  ← .header
-├────────────────────────────────────────┤
-│ [ Type a topic or question... ] [Search]│  ← .input-row
+│ Home  Stories  Channel  Favorites      │  ← tab bar
 ├────────────────────────────────────────┤
 │                                        │
-│       word particles (canvas)          │  ← #home (100vh − 240px)
-│   OR  passage cards + dot separators   │  ← #results
-│   OR  saved passage cards              │  ← #saved
 │                                        │
-│              Searching…                │  ← #spinner
-│                    ·                   │  ← end-dot
+│         word particle animation        │  ← #home (100vh − tab height)
+│      (click word → /stories?q=word)    │
+│                                        │
+│                                        │
 └────────────────────────────────────────┘
-                                           ← #sentinel (1px IntersectionObserver)
 ```
 
-### Channel (channel.html)
+---
+
+### Stories (`/stories`)
 
 ```
 ┌────────────────────────────────────────┐
-│ ← search   Channel                     │  ← .header
+│ Home  Stories  Channel  Favorites      │  ← tab bar
+├──────────┬─────────────────────────────┤
+│ Books    │  [ search...    semantic ] [Search] │
+│          │                             │
+│ ○ All    │  [Books ▾]  142 stories     │  ← toolbar
+│ ○ Book A │                             │
+│ ○ Book B │  passage card               │
+│ ○ Book C │  ·                          │
+│          │  passage card               │
+│  (close) │  ·                          │
+└──────────┴─────────────────────────────┘
+```
+
+Sidebar is hidden by default. "Books" button opens it. On mobile: overlay.
+
+---
+
+### Channel (`/channel`)
+
+```
+┌────────────────────────────────────────┐
+│ Home  Stories  Channel  Favorites      │  ← tab bar
 ├────────────────────────────────────────┤
 │                                        │
 │  you: [user question]                  │  ← .msg.user
 │                                        │
-│  [osho response text...]               │  ← .msg.osho
-│                    teaching  save      │  ← .meta
+│  [response text...]                    │  ← .msg.osho
+│                     casual  save       │  ← .meta
 │                                        │
 │  (repeats)                             │
 │                                        │
 ├────────────────────────────────────────┤
-│ [ Ask the channel anything… ▼ ] [Ask]  │  ← .input-row (sticky)
+│ [ Ask anything...          casual ] [Ask] │  ← sticky input row
 └────────────────────────────────────────┘
-                             warming up…   ← .warming (fixed bottom-right)
+                              warming up…  ← fixed bottom-right
 ```
 
-### Stories (stories.html)
+---
+
+### Favorites (`/favorites`)
 
 ```
 ┌────────────────────────────────────────┐
-│ h1: Osho Says           Search  Stories│  ← .header + nav
-├────────────────────────────────────────┤
-│ Parables, koans, and life lessons…     │  ← .subtitle
-│ 142 stories found                      │  ← .count
-│ [All] [Book A] [Book B] [Book C]       │  ← .book-filter chips
-│ [ Filter stories by keyword...       ] │  ← .filter-box input
+│ Home  Stories  Channel  Favorites      │  ← tab bar
 ├────────────────────────────────────────┤
 │                                        │
-│  story card                            │
-│  · (separator)                         │
-│  story card                            │
+│  passage card               [Remove]   │
+│  ·                                     │
+│  passage card               [Remove]   │
 │  ·                                     │
 │                    ·                   │  ← end-dot
+│                                        │
+│  OR: "No saved passages yet"           │  ← empty state
 └────────────────────────────────────────┘
 ```
 
@@ -527,8 +498,10 @@ font-family: Georgia, serif
 
 ## Accessibility Notes
 
-- All interactive elements use `font-family: inherit` — no browser-default fonts bleed in
-- **Focus rings:** currently `outline: none` with only border-color change on inputs — add `:focus-visible { outline: 2px solid --color-border-focus; outline-offset: 2px }` for keyboard navigation
-- **Color contrast:** `--color-ink-faint` (`#aaa`) on `--color-bg` (`#faf9f7`) is ~2.8:1 — below WCAG AA (4.5:1). Use `--color-ink-subtle` (`#888`) or `--color-ink-muted` (`#666`) for body-level secondary text where possible
-- **Aria:** star button and mode dropdown trigger lack `aria-label` — add `aria-label="Saved passages"` and `aria-label="Change mode"` respectively
+- All interactive elements use `font-family: inherit`
+- **Focus rings:** inputs use `outline: none` — add `:focus-visible { outline: 2px solid --color-border-focus; outline-offset: 2px }` for keyboard navigation
+- **Mode pill contrast:** purple `#7c5cbf` and red `#b04040` on white meet WCAG AA at small text; blue `#3a6eaa` is borderline — verify at actual rendered size
+- **Color contrast:** `--color-ink-faint` (`#aaa`) on `--color-bg` is ~2.8:1, below WCAG AA — use `--color-ink-subtle` or darker for body text
+- **Sidebar:** add `aria-expanded` to the Books button; `role="navigation"` and `aria-label="Book filter"` to the sidebar
+- **Mode pill:** add `aria-label="Current mode: casual. Click to change."` updated on each cycle
 - **Reduced motion:** word particle animation should respect `prefers-reduced-motion: reduce`
