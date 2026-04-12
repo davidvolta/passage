@@ -6,3 +6,7 @@ startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/"
 restartPolicyType = "on_failure"
 volumes = ["/data"]
+
+[[deploy.schedules]]
+cron = "0 0 * * *"
+command = "python update_notion_words.py"
