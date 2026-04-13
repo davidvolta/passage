@@ -100,9 +100,9 @@ def main():
 
     collection_name = args.collection
     if collection_name == config.NOTION_COLLECTION:
-        out_filename = 'words_notion.json'
+        out_path = config.WORDS_NOTION_FILE
     else:
-        out_filename = 'words.json'
+        out_path = config.ROOT / 'words.json'
 
     print(f"Connecting to Qdrant...")
     print(f"Using collection: {collection_name}")
@@ -138,9 +138,8 @@ def main():
     print(f"\n  {len(words)} words found:")
     print(' ', ', '.join(words))
 
-    out = config.ROOT / out_filename
-    out.write_text(json.dumps(words, indent=2))
-    print(f"\nWritten to {out}")
+    out_path.write_text(json.dumps(words, indent=2))
+    print(f"\nWritten to {out_path}")
 
 
 if __name__ == '__main__':

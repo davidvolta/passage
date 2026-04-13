@@ -44,3 +44,4 @@ SAVED_PASSAGES_FILE = SAVED_PASSAGES_DIR / "saved_passages.json"
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
 NOTION_PAGE_ID = os.getenv("NOTION_PAGE_ID")
 NOTION_COLLECTION = "notion_words"
+WORDS_NOTION_FILE = SAVED_PASSAGES_DIR / "words_notion.json"

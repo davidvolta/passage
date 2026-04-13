@@ -49,7 +49,7 @@ def _write_saved(saved: list[dict]) -> None:
 
 @app.get("/api/notion-updated")
 async def api_notion_updated():
-    words_file = config.ROOT / "words_notion.json"
+    words_file = config.WORDS_NOTION_FILE
     if not words_file.exists():
         return {"updated": None}
     mtime = words_file.stat().st_mtime
@@ -61,7 +61,7 @@ async def api_notion_updated():
 async def api_words(source: str = Query(default="books", description="Word source: 'books' or 'notion'")):
     """Return words for the animation. source='books' or 'notion'."""
     if source == "notion":
-        words_file = config.ROOT / "words_notion.json"
+        words_file = config.WORDS_NOTION_FILE
     else:
         words_file = config.ROOT / "words.json"
 
