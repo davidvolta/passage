@@ -22,7 +22,7 @@ let animFrame;
 let spawnInterval;
 
 async function loadWords() {
-  const resp = await fetch('/api/words?source=notion');
+  const resp = await fetch('/api/words');
   WORDS = await resp.json();
 }
 

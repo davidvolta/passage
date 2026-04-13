@@ -94,15 +94,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--clusters', type=int, default=40)
     parser.add_argument('--count', type=int, default=50, help='Target number of output words')
-    parser.add_argument('--collection', type=str, default='passages',
-                       help='Qdrant collection to use (passages or notion_words)')
+    parser.add_argument('--collection', type=str, default=config.NOTION_COLLECTION,
+                       help='Qdrant collection to use')
     args = parser.parse_args()
 
     collection_name = args.collection
-    if collection_name == config.NOTION_COLLECTION:
-        out_path = config.WORDS_NOTION_FILE
-    else:
-        out_path = config.ROOT / 'words.json'
+    out_path = config.WORDS_NOTION_FILE
 
     print(f"Connecting to Qdrant...")
     print(f"Using collection: {collection_name}")

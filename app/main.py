@@ -58,15 +58,10 @@ async def api_notion_updated():
 
 
 @app.get("/api/words")
-async def api_words(source: str = Query(default="books", description="Word source: 'books' or 'notion'")):
-    """Return words for the animation. source='books' or 'notion'."""
-    if source == "notion":
-        words_file = config.WORDS_NOTION_FILE
-    else:
-        words_file = config.ROOT / "words.json"
-
-    if words_file.exists():
-        return json.loads(words_file.read_text())
+async def api_words():
+    """Return words for the home animation."""
+    if config.WORDS_NOTION_FILE.exists():
+        return json.loads(config.WORDS_NOTION_FILE.read_text())
     return []
 
 
