@@ -17,7 +17,7 @@ from typing import List, Tuple, Dict, Any
 
 # Configuration
 MARKDOWN_DIR = Path(__file__).parent.parent / "processed" / "markdown"
-OUTPUT_FILE = Path(__file__).parent.parent / "stories.md"
+OUTPUT_FILE = Path(__file__).parent.parent / "docs" / "stories.md"
 MIN_WORDS = 40
 MAX_WORDS = 800
 

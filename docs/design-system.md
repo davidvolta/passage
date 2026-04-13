@@ -76,7 +76,7 @@ All interactive elements use `font-family: inherit`.
 | `--space-card` | `20px` | Card internal padding |
 | `--space-section` | `24px` | Toolbar margin-bottom, search bar margin-bottom |
 | `--space-input-x` | `14px` | Input/textarea left padding |
-| `--space-input-right` | `95px` | Input/textarea right padding — reserves room for mode pill |
+| `--space-input-right` | `95px` | Channel textarea right padding — reserves room for mode pill (Passages search has no pill) |
 | `--space-input-y` | `10px` | Input/textarea vertical padding |
 | `--space-page-bottom` | `32px` | Content top padding, messages bottom margin |
 | `--space-sidebar` | `200px` | Sidebar open width (desktop) |
@@ -105,7 +105,7 @@ All interactive elements use `font-family: inherit`.
 - **Max content width:** `720px`, centered with `margin: 0 auto`
 - **Page padding:** `0 20px` (tab bar sits flush top, content starts below it)
 - **Tab bar:** fixed to top of every page, `border-bottom: 1px solid --color-border`
-- **Stories layout:** `display: flex` — sidebar (collapsible) + main column
+- **Passages layout:** `display: flex` — sidebar (collapsible) + main column
 - **Channel layout:** `min-height: 100vh; display: flex; flex-direction: column` — input row sticks to `bottom: 20px`
 - **Mobile breakpoint:** `600px` — sidebar switches from push-layout to fixed overlay
 
@@ -139,17 +139,17 @@ transition:   color 0.15s
 | hover | `color: --color-ink` |
 | active page | `color: --color-ink; border-bottom-color: --color-ink` |
 
-Pages: `Home`, `Stories`, `Channel`, `Favorites`
+Pages: `Home`, `Passages`, `Channel`, `Favorites`
 
 ---
 
-### Input Bar (shared — Stories search + Channel chat)
+### Input Bar (shared — Passages search + Channel chat)
 
-Both pages use the same input visual. Stories uses `<input>`, Channel uses `<textarea>` (auto-grow, capped at 160px). The mode pill is inset inside both.
+Both pages use the same input visual. Passages uses `<input>`, Channel uses `<textarea>` (auto-grow, capped at 160px).
 
 ```
 width:         100%
-padding:       10px 95px 10px 14px   ← right padding reserves room for mode pill
+padding:       10px 14px              ← no mode pill in Passages; Channel uses 95px right for mode pill
 font-size:     --text-body-sm
 border:        1px solid --color-border-input
 border-radius: --radius-input
@@ -183,7 +183,7 @@ white-space:   nowrap
 
 ### Mode Pill (inset in Input Bar)
 
-A colored pill absolutely positioned at the right edge of the input. Clicking it cycles through modes. This is the **only** use of color in the UI.
+A colored pill absolutely positioned at the right edge of the Channel input. Clicking it cycles through modes. This is the **only** use of color in the UI. (Passages search does not have a mode pill.)
 
 ```
 position:      absolute
@@ -208,14 +208,11 @@ hover: `opacity: 0.7`
 
 | Mode | Context | Color token | Hex |
 |---|---|---|---|
-| `semantic` | Stories | `--color-mode-purple` | `#7c5cbf` |
-| `exact` | Stories | `--color-mode-red` | `#b04040` |
 | `casual` | Channel | `--color-mode-purple` | `#7c5cbf` |
 | `teaching` | Channel | `--color-mode-red` | `#b04040` |
 | `story` | Channel | `--color-mode-blue` | `#3a6eaa` |
 
-Stories cycles: `semantic → exact → semantic`
-Channel cycles: `casual → teaching → story → casual`
+Channel cycles: `CASUAL → TEACHING → STORY → CASUAL`
 
 ---
 
@@ -281,9 +278,9 @@ cursor:      pointer
 
 ---
 
-### Sidebar — Book List (Stories page)
+### Sidebar — Book List (Passages page)
 
-Collapsible panel on the left of the Stories page. On mobile it becomes a fixed overlay.
+Collapsible panel on the left of the Passages page. On mobile it becomes a fixed overlay.
 
 **Collapsed:** `width: 0; overflow: hidden`
 **Open:** `width: 200px; padding-right: 20px; border-right: 1px solid --color-border`
@@ -322,7 +319,7 @@ Book count badge: `font-size: --text-xs; color: --color-ink-ghost; margin-left: 
 
 ---
 
-### Toolbar (Stories page)
+### Toolbar (Passages page)
 
 Sits between the input bar and results. Contains the Books button and result count.
 
@@ -421,12 +418,12 @@ font-family: Georgia, serif
 
 ```
 ┌────────────────────────────────────────┐
-│ Home  Stories  Channel  Favorites      │  ← tab bar
+│ Home  Passages  Channel          ♡     │  ← tab bar
 ├────────────────────────────────────────┤
 │                                        │
 │                                        │
 │         word particle animation        │  ← #home (100vh − tab height)
-│      (click word → /stories?q=word)    │
+│      (click word → /passages?q=word)    │
 │                                        │
 │                                        │
 └────────────────────────────────────────┘
@@ -434,15 +431,15 @@ font-family: Georgia, serif
 
 ---
 
-### Stories (`/stories`)
+### Passages (`/passages`)
 
 ```
 ┌────────────────────────────────────────┐
-│ Home  Stories  Channel  Favorites      │  ← tab bar
+│ Home  Passages  Channel          ♡     │  ← tab bar
 ├──────────┬─────────────────────────────┤
-│ Books    │  [ search...    semantic ] [Search] │
+│ Books    │  [ search...           ] [Search] │
 │          │                             │
-│ ○ All    │  [Books ▾]  142 stories     │  ← toolbar
+│ ○ All    │  [Books ▾]  142 passages    │  ← toolbar
 │ ○ Book A │                             │
 │ ○ Book B │  passage card               │
 │ ○ Book C │  ·                          │
@@ -459,18 +456,18 @@ Sidebar is hidden by default. "Books" button opens it. On mobile: overlay.
 
 ```
 ┌────────────────────────────────────────┐
-│ Home  Stories  Channel  Favorites      │  ← tab bar
+│ Home  Passages  Channel          ♡     │  ← tab bar
 ├────────────────────────────────────────┤
 │                                        │
 │  you: [user question]                  │  ← .msg.user
 │                                        │
 │  [response text...]                    │  ← .msg.osho
-│                     casual  save       │  ← .meta
+│                     CASUAL  ♡          │  ← .meta
 │                                        │
 │  (repeats)                             │
 │                                        │
 ├────────────────────────────────────────┤
-│ [ Ask anything...          casual ] [Ask] │  ← sticky input row
+│ [ Ask anything...          CASUAL ] [Ask] │  ← sticky input row
 └────────────────────────────────────────┘
                               warming up…  ← fixed bottom-right
 ```
@@ -481,7 +478,7 @@ Sidebar is hidden by default. "Books" button opens it. On mobile: overlay.
 
 ```
 ┌────────────────────────────────────────┐
-│ Home  Stories  Channel  Favorites      │  ← tab bar
+│ Home  Passages  Channel          ♡     │  ← tab bar
 ├────────────────────────────────────────┤
 │                                        │
 │  passage card               [Remove]   │

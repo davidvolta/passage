@@ -92,7 +92,7 @@ async def favorites_page(request: Request):
 
 def _parse_stories() -> list[dict]:
     """Parse stories.md and return list of stories."""
-    stories_file = config.ROOT / "stories.md"
+    stories_file = config.ROOT / "docs" / "stories.md"
     if not stories_file.exists():
         return []
 
