@@ -144,19 +144,16 @@ def embed_and_upsert(chunks: List[dict], collection_name: str) -> None:
     """Embed chunks and upsert to Qdrant."""
     client = QdrantClient(url=config.QDRANT_URL)
 
-    # Ensure collection exists
+    # Recreate collection to clear existing data
     try:
-        client.get_collection(collection_name)
+        client.delete_collection(collection_name)
     except Exception:
-        client.create_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(size=config.EMBED_DIMENSIONS, distance=Distance.COSINE),
-        )
-        logger.info(f"Created collection: {collection_name}")
-
-    # Clear existing data
-    client.delete(collection_name=collection_name, points_selector={"must": []})
-    logger.info(f"Cleared collection: {collection_name}")
+        pass
+    client.create_collection(
+        collection_name=collection_name,
+        vectors_config=VectorParams(size=config.EMBED_DIMENSIONS, distance=Distance.COSINE),
+    )
+    logger.info(f"Recreated collection: {collection_name}")
 
     if not chunks:
         logger.warning("No chunks to embed")
