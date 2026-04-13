@@ -238,18 +238,22 @@ def process_markdown(md_path: Path, existing_chunk_ids: set[str]) -> dict:
 
         logger.info(f"Embedding {len(new_chunks)} chunks for {md_path.name} (skipped {result['chunks_skipped']})")
 
-        batch_size = 32
+        embed_batch_size = 32
+        upsert_batch_size = 16
         all_points = []
-        for i in range(0, len(new_chunks), batch_size):
-            batch = new_chunks[i:i + batch_size]
+        for i in range(0, len(new_chunks), embed_batch_size):
+            batch = new_chunks[i:i + embed_batch_size]
             embeddings = embed_chunks_batch(batch)
             for chunk, embedding in zip(batch, embeddings):
                 all_points.append(chunk_to_point(chunk, embedding))
 
-        get_qdrant_client().upsert(
-            collection_name=config.QDRANT_COLLECTION,
-            points=all_points,
-        )
+        # Batch upserts to Qdrant to avoid payload size limits
+        for i in range(0, len(all_points), upsert_batch_size):
+            batch_points = all_points[i:i + upsert_batch_size]
+            get_qdrant_client().upsert(
+                collection_name=config.QDRANT_COLLECTION,
+                points=batch_points,
+            )
         result["chunks_embedded"] = len(new_chunks)
 
     except Exception as e:

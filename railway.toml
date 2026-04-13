@@ -9,4 +9,4 @@ volumes = ["/data"]
 
 [[deploy.schedules]]
 cron = "0 0 * * *"
-command = "python update_notion_words.py"
+command = "python scripts/update_notion_words.py"

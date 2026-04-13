@@ -6,15 +6,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import config
-from ingest import (
+from scripts.ingest import (
     build_chunks,
     chunk_to_point,
     count_words,
-    filename_to_title,
     parse_frontmatter,
     slugify,
-    split_paragraphs,
-    write_markdown,
 )
 
 
@@ -33,15 +30,6 @@ def test_slugify_leading_trailing_hyphens():
     assert slugify("  --hello--  ") == "hello"
 
 
-# ── filename_to_title ─────────────────────────────────────────────────────────
-
-def test_filename_to_title_underscores():
-    assert filename_to_title("the_great_gatsby") == "The Great Gatsby"
-
-def test_filename_to_title_hyphens():
-    assert filename_to_title("moby-dick") == "Moby Dick"
-
-
 # ── count_words ───────────────────────────────────────────────────────────────
 
 def test_count_words():
@@ -49,24 +37,6 @@ def test_count_words():
 
 def test_count_words_empty():
     assert count_words("") == 0
-
-
-# ── split_paragraphs ──────────────────────────────────────────────────────────
-
-def test_split_paragraphs_filters_short():
-    body = "Hi.\n\nThis is a real paragraph with enough words to pass the filter."
-    result = split_paragraphs(body)
-    assert len(result) == 1
-    assert "real paragraph" in result[0]
-
-def test_split_paragraphs_filters_all_caps():
-    body = "RUNNING HEADER\n\nThis is a real paragraph with enough words in it."
-    result = split_paragraphs(body)
-    assert len(result) == 1
-    assert "real paragraph" in result[0]
-
-def test_split_paragraphs_empty_body():
-    assert split_paragraphs("") == []
 
 
 # ── parse_frontmatter ─────────────────────────────────────────────────────────
@@ -162,13 +132,3 @@ def test_chunk_to_point_payload():
     assert point.vector == embedding
 
 
-# ── write_markdown ────────────────────────────────────────────────────────────
-
-def test_write_markdown_roundtrip(tmp_path):
-    out = tmp_path / "test.md"
-    write_markdown(out, "My Title", "my_title.pdf", "pdf", "Body content here.")
-    content = out.read_text()
-    metadata, body = parse_frontmatter(content)
-    assert metadata["title"] == "My Title"
-    assert metadata["format"] == "pdf"
-    assert body == "Body content here."

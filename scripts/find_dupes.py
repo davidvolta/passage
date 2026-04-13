@@ -18,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-MARKDOWN_DIR = Path("processed/markdown")
+MARKDOWN_DIR = Path(__file__).parent.parent / "processed" / "markdown"
 SHINGLE_SIZE = 12       # words per shingle
 SAMPLE_STEP = 15        # take one shingle every N words (overlapping coverage)
 DUPE_THRESHOLD = 0.80   # fraction of smaller file's shingles found in larger → duplicate
