@@ -272,7 +272,6 @@ def main():
     logger.info("Starting ingestion...")
 
     config.MARKDOWN_DIR.mkdir(parents=True, exist_ok=True)
-    config.DB_DIR.mkdir(parents=True, exist_ok=True)
 
     md_files = sorted(config.MARKDOWN_DIR.glob("*.md"))
     if not md_files:
