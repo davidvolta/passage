@@ -25,3 +25,7 @@ venv/
 processed/
 db/
 OshoAudio_mp3/
+
+# Runtime data (lives in Railway /data volume in prod)
+saved_passages.json
+words_notion.json
